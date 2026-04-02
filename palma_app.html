@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Palma">
+<title>Palma Aceitera</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --green:#1A5C2A;--green-mid:#2E7D32;--green-light:#E8F5E9;--green-pale:#F1FAF2;
+  --amber:#BA7517;--amber-light:#FFF8E1;
+  --red:#A32D2D;--red-light:#FFEBEE;
+  --text:#1a1a1a;--text-2:#555;--text-3:#888;
+  --border:#e0e0e0;--bg:#f5f5f5;--white:#fff;
+  --radius:12px;--radius-sm:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+
+/* NAV */
+nav{background:var(--green);padding:16px 20px 12px;position:sticky;top:0;z-index:100}
+.nav-title{color:#fff;font-size:18px;font-weight:600;letter-spacing:-.3px}
+.nav-sub{color:rgba(255,255,255,.7);font-size:12px;margin-top:2px}
+
+/* BOTTOM TAB BAR */
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;cursor:pointer;color:var(--text-3);font-size:10px;gap:4px;border:none;background:none;transition:color .15s}
+.tab.active{color:var(--green)}
+.tab svg{width:22px;height:22px;stroke-width:1.8}
+
+/* SCREENS */
+.screen{display:none;padding:16px}
+.screen.active{display:block}
+
+/* CARDS */
+.card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:12px}
+.card-title{font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.kpi{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:14px}
+.kpi-label{font-size:11px;color:var(--text-3);margin-bottom:6px}
+.kpi-value{font-size:22px;font-weight:600;color:var(--text);line-height:1}
+.kpi-sub{font-size:11px;color:var(--text-3);margin-top:4px}
+.kpi.green{border-color:#a5d6a7;background:var(--green-pale)}
+.kpi.green .kpi-value{color:var(--green-mid)}
+.kpi.amber{border-color:#ffe082;background:var(--amber-light)}
+.kpi.amber .kpi-value{color:var(--amber)}
+
+/* PROGRESS BAR */
+.progress-wrap{margin:6px 0 0}
+.progress-bar{height:6px;background:#e0e0e0;border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:var(--green-mid);border-radius:3px;transition:width .6s ease}
+
+/* FINCA TABLE */
+.finca-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.finca-row:last-child{border-bottom:none}
+.finca-dot{width:8px;height:8px;border-radius:50%;margin-right:10px;flex-shrink:0}
+.finca-name{font-size:13px;font-weight:500;flex:1}
+.finca-kg{font-size:13px;font-weight:600;color:var(--text)}
+.finca-ratio{font-size:11px;color:var(--text-3);margin-left:8px}
+
+/* MONTHLY TABLE */
+.month-table{width:100%;border-collapse:collapse;font-size:12px}
+.month-table th{background:var(--green);color:#fff;padding:6px 8px;text-align:center;font-weight:500}
+.month-table th:first-child{text-align:left}
+.month-table td{padding:7px 8px;border-bottom:1px solid var(--border);text-align:center}
+.month-table td:first-child{text-align:left;font-weight:500;font-size:11px}
+.month-table tr:nth-child(even) td{background:#fafafa}
+.month-table .zero{color:#ccc}
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* ALERTS */
+.alert-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--red-light);border:1px solid #ffcdd2;border-radius:var(--radius-sm);margin-bottom:8px}
+.alert-icon{width:32px;height:32px;background:#e57373;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.alert-icon svg{width:16px;height:16px;stroke:#fff}
+.alert-text{font-size:13px;font-weight:500;color:var(--red)}
+.alert-sub{font-size:11px;color:#c62828;margin-top:2px}
+.alert-ok{text-align:center;padding:20px;color:var(--text-3);font-size:14px}
+
+/* FORM */
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px;display:block}
+.form-control{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:15px;background:var(--white);color:var(--text);appearance:none;-webkit-appearance:none}
+.form-control:focus{outline:none;border-color:var(--green-mid);box-shadow:0 0 0 3px rgba(46,125,50,.1)}
+select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.btn-submit{width:100%;padding:15px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-size:16px;font-weight:600;cursor:pointer;margin-top:4px;transition:opacity .15s}
+.btn-submit:active{opacity:.85}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:12px 20px;border-radius:24px;font-size:14px;z-index:999;opacity:0;transition:opacity .3s;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* LOADING */
+.loading{text-align:center;padding:40px 20px;color:var(--text-3)}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--green-mid);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SECTION HEADER */
+.section-header{font-size:13px;font-weight:600;color:var(--text-2);margin:16px 0 8px;padding:0 2px}
+
+/* FINCA COLOR DOTS */
+.d0{background:#1A5C2A}.d1{background:#2196F3}.d2{background:#FF9800}.d3{background:#9C27B0}.d4{background:#F44336}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-title">&#127804; Palma Aceitera</div>
+  <div class="nav-sub" id="nav-sub">Cargando...</div>
+</nav>
+
+<!-- SCREEN: DASHBOARD -->
+<div class="screen active" id="screen-dashboard">
+  <div id="dashboard-content">
+    <div class="loading"><div class="spinner"></div>Cargando datos...</div>
+  </div>
+</div>
+
+<!-- SCREEN: MENSUAL -->
+<div class="screen" id="screen-mensual">
+  <div id="mensual-content">
+    <div class="loading"><div class="spinner"></div>Cargando...</div>
+  </div>
+</div>
+
+<!-- SCREEN: REGISTRO -->
+<div class="screen" id="screen-registro">
+  <div class="card">
+    <div class="card-title">Nuevo registro de cosecha</div>
+    <div class="form-group">
+      <label class="form-label">Fecha</label>
+      <input type="date" class="form-control" id="f-fecha">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Finca</label>
+      <select class="form-control" id="f-finca">
+        <option value="">Seleccionar finca...</option>
+        <option>Los Corrales</option>
+        <option>Chipo</option>
+        <option>Castañeda</option>
+        <option>Andino</option>
+        <option>Marujita</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Lote <span style="color:var(--text-3);font-weight:400">(opcional)</span></label>
+      <select class="form-control" id="f-lote">
+        <option value="">Sin lote específico</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">N&#176; Racimos <span style="color:var(--text-3);font-weight:400">(opcional)</span></label>
+      <input type="number" class="form-control" id="f-racimos" placeholder="0" min="0" inputmode="numeric">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Kilogramos (kg)</label>
+      <input type="number" class="form-control" id="f-kg" placeholder="0.00" min="0" step="0.01" inputmode="decimal">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Observaciones <span style="color:var(--text-3);font-weight:400">(opcional)</span></label>
+      <textarea class="form-control" id="f-obs" rows="3" placeholder="Clima, incidencias, etc." style="resize:none"></textarea>
+    </div>
+    <button class="btn-submit" id="btn-guardar" onclick="guardarRegistro()">Guardar registro</button>
+  </div>
+</div>
+
+<!-- SCREEN: ALERTAS -->
+<div class="screen" id="screen-alertas">
+  <div id="alertas-content">
+    <div class="loading"><div class="spinner"></div>Cargando...</div>
+  </div>
+</div>
+
+<!-- BOTTOM TAB BAR -->
+<nav class="tabbar">
+  <button class="tab active" onclick="goTo('dashboard',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </button>
+  <button class="tab" onclick="goTo('mensual',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Mensual
+  </button>
+  <button class="tab" onclick="goTo('registro',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Registrar
+  </button>
+  <button class="tab" onclick="goTo('alertas',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+    Alertas
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbyCtGup4EMqvE-mYa7_WJnL4o7mAOZxwClAGCFQ1RifJomZ7mrMSrNRUtlEDFMHXwFp/exec";
+const FINCA_COLORS = ['#1A5C2A','#2196F3','#FF9800','#9C27B0','#F44336'];
+const LOTES = {
+  'Los Corrales':['LC-01','LC-02','LC-03','L-04','L-05','L-06'],
+  'Chipo':['CH-01','CH-02','L-03','L-04','L-05','L-06'],
+  'Castañeda':['CA-01','CA-02','L-03','L-04','L-05','L-06'],
+  'Andino':['AN-01','AN-02','AN-03','L-04','L-05','L-06'],
+  'Marujita':['MR-01','MR-02','L-03','L-04','L-05','L-06']
+};
+
+let kpiCache = null, mensualCache = null;
+
+function fmt(n){return Number(n).toLocaleString('es-EC',{maximumFractionDigits:0});}
+function fmt2(n){return Number(n).toLocaleString('es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+function goTo(screen, btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('screen-'+screen).classList.add('active');
+  btn.classList.add('active');
+  if(screen==='dashboard' && !kpiCache) loadDashboard();
+  if(screen==='mensual' && !mensualCache) loadMensual();
+  if(screen==='alertas' && !kpiCache) loadDashboard();
+}
+
+async function fetchAPI(params){
+  const url = API+'?'+Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+  const res = await fetch(url);
+  return res.json();
+}
+
+async function loadDashboard(){
+  try{
+    const d = await fetchAPI({action:'getKpis'});
+    kpiCache = d;
+    renderDashboard(d);
+    renderAlertas(d);
+    const now = new Date();
+    document.getElementById('nav-sub').textContent = 'Actualizado '+now.toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    document.getElementById('dashboard-content').innerHTML='<div class="loading">Error al cargar. Verifica tu conexión.</div>';
+  }
+}
+
+function renderDashboard(d){
+  const avance = parseFloat(d.avancePct);
+  const fincas = ['Los Corrales','Chipo','Castañeda','Andino','Marujita'];
+  const kgF = d.kgFinca;
+
+  const filas = fincas.map((f,i)=>`
+    <div class="finca-row">
+      <div class="finca-dot d${i}"></div>
+      <div class="finca-name">${f}</div>
+      <div>
+        <div class="finca-kg">${fmt(kgF[f])} kg</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('dashboard-content').innerHTML=`
+    <div class="kpi-grid">
+      <div class="kpi green">
+        <div class="kpi-label">Total Kg año</div>
+        <div class="kpi-value">${fmt(d.totalKg)}</div>
+        <div class="kpi-sub">kg producidos</div>
+      </div>
+      <div class="kpi green">
+        <div class="kpi-label">Kg/Racimo prom.</div>
+        <div class="kpi-value">${fmt2(d.kgRacProm)}</div>
+        <div class="kpi-sub">kg por racimo</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Avance vs meta anual</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+        <span style="font-size:24px;font-weight:600;color:var(--green-mid)">${d.avancePct}%</span>
+        <span style="font-size:12px;color:var(--text-3)">${fmt(d.totalKg)} / ${fmt(d.meta)} kg</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(avance,100)}%"></div></div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi amber">
+        <div class="kpi-label">Mejor mes</div>
+        <div class="kpi-value" style="font-size:18px">${d.mejorMes}</div>
+        <div class="kpi-sub">${fmt(d.mejorMesKg)} kg</div>
+      </div>
+      <div class="kpi amber">
+        <div class="kpi-label">Mejor Kg/Rac</div>
+        <div class="kpi-value" style="font-size:16px">${d.mejorKgRac}</div>
+        <div class="kpi-sub">${fmt2(d.mejorKgRacVal)} kg/rac</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Producción por finca</div>
+      ${filas}
+    </div>`;
+}
+
+async function loadMensual(){
+  try{
+    const d = await fetchAPI({action:'getMensual'});
+    mensualCache = d;
+    renderMensual(d);
+  }catch(e){
+    document.getElementById('mensual-content').innerHTML='<div class="loading">Error al cargar.</div>';
+  }
+}
+
+function renderMensual(d){
+  const mesesActivos = d.meses.filter((_,i)=>d.fincas.some(f=>d.tabla[f].kg[i]>0));
+  const idxActivos = d.meses.reduce((acc,m,i)=>{if(mesesActivos.includes(m))acc.push(i);return acc;},[]);
+
+  const headers = '<th>Finca</th>'+idxActivos.map(i=>`<th>${d.meses[i]}</th>`).join('')+'<th>Total</th>';
+
+  const rows = d.fincas.map((f,fi)=>{
+    const total = d.tabla[f].kg.reduce((a,b)=>a+b,0);
+    const celdas = idxActivos.map(i=>{
+      const kg = d.tabla[f].kg[i];
+      const rac = d.tabla[f].rac[i];
+      if(kg===0) return `<td class="zero">—</td>`;
+      const ratio = rac>0?(kg/rac).toFixed(1):'—';
+      return `<td><div style="font-weight:500">${fmt(kg)}</div><div style="font-size:10px;color:var(--text-3)">${ratio}</div></td>`;
+    }).join('');
+    return `<tr><td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${FINCA_COLORS[fi]};margin-right:6px"></span>${f}</td>${celdas}<td style="font-weight:600;color:var(--green-mid)">${fmt(total)}</td></tr>`;
+  }).join('');
+
+  document.getElementById('mensual-content').innerHTML=`
+    <div class="section-header">Producción mensual — Kg y Kg/Rac</div>
+    <div class="card" style="padding:12px">
+      <div class="scroll-x">
+        <table class="month-table">
+          <thead><tr>${headers}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderAlertas(d){
+  let html = '';
+  if(d.alertas && d.alertas.length>0){
+    html = d.alertas.map(a=>`
+      <div class="alert-item">
+        <div class="alert-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div>
+          <div class="alert-text">${a.finca}</div>
+          <div class="alert-sub">Kg/Racimo: ${a.kgRac} — por debajo de 5.0</div>
+        </div>
+      </div>`).join('');
+  } else {
+    html = `<div class="alert-ok">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="1.5" style="margin-bottom:12px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+      <div style="font-weight:500;color:var(--text-2)">Todo en orden</div>
+      <div style="font-size:12px;margin-top:4px">Todas las fincas con Kg/Racimo ≥ 5.0</div>
+    </div>`;
+  }
+  document.getElementById('alertas-content').innerHTML=`
+    <div class="section-header">Fincas por debajo del umbral (5 kg/racimo)</div>
+    ${html}`;
+}
+
+document.getElementById('f-finca').addEventListener('change',function(){
+  const loteSelect = document.getElementById('f-lote');
+  loteSelect.innerHTML='<option value="">Sin lote específico</option>';
+  const lotes = LOTES[this.value]||[];
+  lotes.forEach(l=>{const o=document.createElement('option');o.value=l;o.textContent=l;loteSelect.appendChild(o);});
+});
+
+document.getElementById('f-fecha').value = new Date().toISOString().split('T')[0];
+
+async function guardarRegistro(){
+  const fecha = document.getElementById('f-fecha').value;
+  const finca = document.getElementById('f-finca').value;
+  const lote  = document.getElementById('f-lote').value;
+  const racimos = document.getElementById('f-racimos').value;
+  const kg    = document.getElementById('f-kg').value;
+  const obs   = document.getElementById('f-obs').value;
+
+  if(!fecha){showToast('Ingresa la fecha');return;}
+  if(!finca){showToast('Selecciona una finca');return;}
+  if(!kg||isNaN(kg)||Number(kg)<=0){showToast('Ingresa los kilogramos');return;}
+
+  const btn = document.getElementById('btn-guardar');
+  btn.disabled=true; btn.textContent='Guardando...';
+
+  try{
+    const res = await fetchAPI({action:'addRegistro',fecha,finca,lote,racimos,kg,obs});
+    if(res.ok){
+      showToast('Registro guardado correctamente');
+      document.getElementById('f-finca').value='';
+      document.getElementById('f-lote').innerHTML='<option value="">Sin lote específico</option>';
+      document.getElementById('f-racimos').value='';
+      document.getElementById('f-kg').value='';
+      document.getElementById('f-obs').value='';
+      document.getElementById('f-fecha').value=new Date().toISOString().split('T')[0];
+      kpiCache=null; mensualCache=null;
+    } else {
+      showToast('Error al guardar');
+    }
+  }catch(e){
+    showToast('Error de conexión');
+  }
+  btn.disabled=false; btn.textContent='Guardar registro';
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+loadDashboard();
+</script>
+</body>
+</html>
