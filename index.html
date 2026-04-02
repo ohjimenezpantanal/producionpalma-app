@@ -252,7 +252,10 @@ function renderMensual(d){
     <div class="section-header">Producción mensual — Kg y Kg/Rac</div>
     <div class="card" style="padding:12px">
       <div class="scroll-x">
-        <table class="month-table"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>
+        <table class="month-table">
+          <thead><tr>${headers}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
       </div>
     </div>`;
 }
@@ -281,10 +284,10 @@ function renderAlertas(d){
 }
 
 document.getElementById('f-finca').addEventListener('change',function(){
-  const s = document.getElementById('f-lote');
-  s.innerHTML='<option value="">Sin lote específico</option>';
+  const loteSelect = document.getElementById('f-lote');
+  loteSelect.innerHTML='<option value="">Sin lote específico</option>';
   (LOTES[this.value]||[]).forEach(l=>{
-    const o=document.createElement('option');o.value=l;o.textContent=l;s.appendChild(o);
+    const o=document.createElement('option');o.value=l;o.textContent=l;loteSelect.appendChild(o);
   });
 });
 
