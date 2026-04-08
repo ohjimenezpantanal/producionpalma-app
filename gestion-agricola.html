@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<title>Pantanal · Gestión Agrícola</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0c0c;--surface:#141414;--surface2:#1c1c1c;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.15);
+  --text:#f0ede8;--muted:rgba(240,237,232,.4);--muted2:rgba(240,237,232,.65);
+  --accent:#b8f04a;--amber:#f0a830;--red:#f05050;--blue:#4ab8f0;
+  --mono:'DM Mono',monospace;--display:'Syne',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--display)}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:20}
+.topbar-brand{display:flex;align-items:center;gap:10px}
+.topbar-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:blink 2.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.topbar-name{font-size:13px;font-weight:700}
+.topbar-sub{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.06em}
+.topbar-date{font-family:var(--mono);font-size:11px;color:var(--muted2)}
+
+/* MAIN TABS */
+.main-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg)}
+.main-tab{flex:1;padding:13px 8px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:color .15s,border-color .15s}
+.main-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* DASHBOARD */
+.btn-refresh{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted2);padding:5px 10px;font-family:var(--mono);font-size:10px;cursor:pointer}
+.semana-filter{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;border-bottom:1px solid var(--border)}
+.semana-filter::-webkit-scrollbar{display:none}
+.sem-btn{flex-shrink:0;padding:5px 12px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-family:var(--mono);font-size:11px;color:var(--muted2);cursor:pointer;white-space:nowrap}
+.sem-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(184,240,74,.06)}
+.loading{text-align:center;padding:60px 20px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.spinner-w{display:inline-block;width:14px;height:14px;border:2px solid rgba(240,237,232,.15);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.kpi-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.kpi-val{font-family:var(--mono);font-size:17px;font-weight:500;line-height:1}
+.kpi-sub{font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:3px}
+.finca-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.finca-row:last-child{border-bottom:none}
+.finca-name{font-size:13px;font-weight:600;flex:1}
+.finca-meta{font-family:var(--mono);font-size:10px;color:var(--muted2);margin-top:2px}
+.bar-wrap{height:2px;background:rgba(255,255,255,.06);border-radius:1px;overflow:hidden;margin-top:5px}
+.bar-fill{height:100%;border-radius:1px}
+.finca-val{font-family:var(--mono);font-size:14px;font-weight:500;flex-shrink:0;margin-left:12px;text-align:right}
+.finca-val-sub{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px;text-align:right}
+.rank-item{display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:6px}
+.rank-num{font-family:var(--mono);font-size:11px;color:var(--muted);width:18px;flex-shrink:0;text-align:center}
+.rank-info{flex:1;min-width:0}
+.rank-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-meta{font-family:var(--mono);font-size:10px;color:var(--muted2);margin-top:2px}
+.rank-nota{text-align:right;flex-shrink:0}
+.rank-nota-num{font-family:var(--mono);font-size:17px;font-weight:500}
+.rank-nota-den{font-family:var(--mono);font-size:9px;color:var(--muted)}
+.alerta-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:6px;border:1px solid}
+.alerta-red{background:rgba(240,80,80,.08);border-color:rgba(240,80,80,.2)}
+.alerta-amber{background:rgba(240,168,48,.08);border-color:rgba(240,168,48,.2)}
+.alerta-green{background:rgba(184,240,74,.06);border-color:rgba(184,240,74,.15)}
+.alerta-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.alerta-title{font-size:12px;font-weight:600;margin-bottom:2px}
+.alerta-sub{font-family:var(--mono);font-size:10px;color:var(--muted2);line-height:1.5}
+.sec-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.sec-icon{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.sec-title{font-size:15px;font-weight:700}
+.agro-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
+.agro-row:last-child{border-bottom:none}
+.agro-badges{display:flex;gap:8px;flex-shrink:0}
+.badge{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:6px;background:var(--surface2);border:1px solid var(--border)}
+.empty{text-align:center;padding:24px 0;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.section{margin-bottom:24px}
+
+/* FORMULARIO */
+.progress-wrap{padding:12px 20px;background:var(--bg);border-bottom:1px solid var(--border)}
+.progress-steps{display:flex;gap:4px}
+.step-dot{flex:1;height:3px;border-radius:2px;background:var(--border2);transition:background .3s}
+.step-dot.done{background:var(--accent)}
+.step-dot.active{background:var(--amber)}
+.progress-label{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px;letter-spacing:.05em}
+.sec-header-form{margin-bottom:20px}
+.sec-icon-form{font-size:11px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.sec-title-form{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.sec-sub-form{font-family:var(--mono);font-size:11px;color:var(--muted2);margin-top:4px}
+.slabel{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:16px;display:flex;align-items:center;gap:8px}
+.slabel::after{content:'';flex:1;height:1px;background:var(--border)}
+.field{margin-bottom:12px}
+.field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field label .req{color:var(--accent)}
+.field input,.field select,.field textarea{width:100%;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--display);font-size:15px;outline:none;transition:border-color .15s,background .15s;-webkit-appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--border2);background:var(--surface2)}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted)}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(240,237,232,.35)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:38px}
+.field select option{background:#1c1c1c}
+.field textarea{resize:none;height:80px}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pesos-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px}
+.pesos-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;min-height:32px}
+.peso-tag{background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-family:var(--mono);font-size:13px;display:flex;align-items:center;gap:6px}
+.peso-tag button{background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:0;line-height:1}
+.peso-input-row{display:flex;gap:8px}
+.peso-input-row input{flex:1;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:15px;outline:none}
+.peso-input-row input:focus{border-color:var(--border2)}
+.btn-add-peso{padding:10px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--accent);font-family:var(--mono);font-size:12px;cursor:pointer;white-space:nowrap}
+.peso-avg{font-family:var(--mono);font-size:11px;color:var(--muted2);margin-top:8px}
+.peso-avg span{color:var(--accent);font-weight:500}
+.counter-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.counter-row:last-child{border-bottom:none}
+.counter-name{font-size:13px}
+.counter-sub{font-family:var(--mono);font-size:10px;margin-top:2px}
+.counter-controls{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.counter-btn{width:32px;height:32px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.counter-val{font-family:var(--mono);font-size:16px;font-weight:500;min-width:30px;text-align:center}
+.escala-row{display:flex;gap:6px;margin-bottom:4px}
+.escala-btn{flex:1;padding:10px 4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:13px;color:var(--muted2);cursor:pointer;text-align:center;transition:all .15s}
+.escala-btn.sel-1{border-color:#4ab8f0;background:rgba(74,184,240,.1);color:#4ab8f0}
+.escala-btn.sel-2{border-color:var(--accent);background:rgba(184,240,74,.08);color:var(--accent)}
+.escala-btn.sel-3{border-color:var(--amber);background:rgba(240,168,48,.08);color:var(--amber)}
+.escala-btn.sel-4{border-color:var(--red);background:rgba(240,80,80,.08);color:var(--red)}
+.cal-row{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.cal-criterio{font-size:13px;font-weight:600;margin-bottom:4px}
+.cal-desc{font-family:var(--mono);font-size:10px;color:var(--muted2);margin-bottom:10px;line-height:1.5}
+.cal-btns{display:flex;gap:4px}
+.cal-btn{flex:1;padding:8px 2px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-family:var(--mono);font-size:12px;color:var(--muted2);cursor:pointer;text-align:center;transition:all .15s}
+.cal-btn.active-low{border-color:var(--red);background:rgba(240,80,80,.15);color:var(--red)}
+.cal-btn.active-mid{border-color:var(--amber);background:rgba(240,168,48,.12);color:var(--amber)}
+.cal-btn.active-high{border-color:var(--accent);background:rgba(184,240,74,.12);color:var(--accent)}
+.nota-auto{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;padding:12px 16px;margin-top:14px}
+.nota-auto.warn{border-left-color:var(--amber)}
+.nota-auto.bad{border-left-color:var(--red)}
+.nota-lbl{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.nota-val{font-family:var(--mono);font-size:28px;font-weight:500}
+.nota-val small{font-size:12px;color:var(--muted2);margin-left:4px}
+.nota-badge{display:inline-flex;align-items:baseline;gap:4px}
+.nota-badge-num{font-family:var(--mono);font-size:36px;font-weight:500}
+.nota-badge-den{font-family:var(--mono);font-size:16px;color:var(--muted)}
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-family:var(--mono);font-size:12px;color:var(--muted2);cursor:pointer;transition:all .15s}
+.chip.sel-amber{border-color:var(--amber);background:rgba(240,168,48,.1);color:var(--amber)}
+.chip.sel-red{border-color:var(--red);background:rgba(240,80,80,.1);color:var(--red)}
+.otro-input{margin-top:8px;display:none}
+.polin-kpi{display:flex;gap:12px;margin-top:12px}
+.polin-kpi-item{flex:1;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px}
+.polin-kpi-val{font-family:var(--mono);font-size:18px;font-weight:500}
+.polin-kpi-lbl{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+.nav-btns{display:flex;gap:10px;margin-top:24px;padding-bottom:32px}
+.btn-back{flex:1;padding:14px;background:transparent;color:var(--muted2);font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--border);border-radius:12px;cursor:pointer}
+.btn-next{flex:2;padding:14px;background:var(--accent);color:#0c0c0c;font-family:var(--display);font-size:14px;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:opacity .15s}
+.btn-next:disabled{opacity:.3;cursor:not-allowed}
+.msg{border-radius:10px;padding:12px 16px;font-family:var(--mono);font-size:12px;letter-spacing:.03em;margin-bottom:14px;display:none}
+.msg.error{background:rgba(240,80,80,.1);border:1px solid rgba(240,80,80,.2);color:var(--red)}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(12,12,12,.3);border-top-color:#0c0c0c;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:7px}
+.confirm-wrap{text-align:center;padding:40px 20px}
+.confirm-icon{width:64px;height:64px;border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(184,240,74,.3)}50%{box-shadow:0 0 0 12px rgba(184,240,74,0)}}
+.confirm-title{font-size:22px;font-weight:700;margin-bottom:8px}
+.confirm-sub{font-family:var(--mono);font-size:12px;color:var(--muted2);line-height:1.6}
+.confirm-details{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin:24px 0;text-align:left}
+.confirm-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:12px}
+.confirm-row:last-child{border-bottom:none}
+.confirm-row-lbl{color:var(--muted)}
+.confirm-row-val{color:var(--accent);text-align:right;max-width:65%}
+.btn-nuevo{width:100%;padding:14px;background:var(--accent);color:#0c0c0c;font-family:var(--display);font-size:14px;font-weight:700;border:none;border-radius:12px;cursor:pointer;margin-top:8px}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-dot"></div>
+    <div>
+      <div class="topbar-name">Pantanal · Gestión Agrícola</div>
+      <div class="topbar-sub" id="topbar-sub">Campo 2026</div>
+    </div>
+  </div>
+  <div id="topbar-right">
+    <div class="topbar-date" id="topbar-date"></div>
+  </div>
+</div>
+
+<!-- MAIN TABS -->
+<div class="main-tabs">
+  <button class="main-tab active" onclick="goMainTab('dashboard')">Dashboard</button>
+  <button class="main-tab" onclick="goMainTab('registro')">Registrar</button>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  DASHBOARD                             -->
+<!-- ═══════════════════════════════════════ -->
+<div id="main-dashboard">
+  <div style="display:flex;align-items:center;justify-content:flex-end;padding:8px 16px;border-bottom:1px solid var(--border)">
+    <button class="btn-refresh" onclick="cargarDatos()">↻ Actualizar</button>
+  </div>
+  <div style="display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg)">
+  <button class="main-tab active" style="font-size:10px;padding:8px 12px" id="filter-tab-mes" onclick="switchFilter('mes')">Por mes</button>
+  <button class="main-tab" style="font-size:10px;padding:8px 12px" id="filter-tab-sem" onclick="switchFilter('semana')">Por semana</button>
+</div>
+<div class="semana-filter" id="mes-filter" style="display:flex"></div>
+<div class="semana-filter" id="semana-filter" style="display:none"></div>
+  <div style="padding:16px">
+    <div id="loading" class="loading"><span class="spinner-w"></span>Cargando datos...</div>
+    <div id="main-content" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  REGISTRO                              -->
+<!-- ═══════════════════════════════════════ -->
+<div id="main-registro" style="display:none">
+  <div class="progress-wrap">
+    <div class="progress-steps">
+      <div class="step-dot active" id="sd-0"></div>
+      <div class="step-dot" id="sd-1"></div>
+      <div class="step-dot" id="sd-2"></div>
+      <div class="step-dot" id="sd-3"></div>
+      <div class="step-dot" id="sd-4"></div>
+    </div>
+    <div class="progress-label" id="progress-label">Paso 1 de 5 — Identificación</div>
+  </div>
+
+  <div style="padding:20px">
+    <div class="msg error" id="msg-error"></div>
+
+    <!-- PASO 0 -->
+    <div id="paso-0">
+      <div class="sec-header-form"><div class="sec-icon-form">01 / Identificación</div><div class="sec-title-form">Ronda de campo</div><div class="sec-sub-form">Fecha, finca y responsable</div></div>
+      <div class="field"><label>Fecha <span class="req">*</span></label><input type="date" id="f-fecha"></div>
+      <div class="field"><label>Finca <span class="req">*</span></label>
+        <select id="f-finca"><option value="">— seleccionar —</option><option>Los Corrales</option><option>Andino</option><option>Chipo</option><option>Castañeda</option><option>Marujita</option></select>
+      </div>
+      <div class="field"><label>Lote con novedad <span style="color:var(--muted)">(si aplica)</span></label><select id="f-lote"><option value="">Sin novedad específica</option></select></div>
+      <div class="field"><label>Registrado por <span class="req">*</span></label>
+        <select id="f-by"><option value="">— seleccionar —</option><option value="Ing. Oscar Jiménez">Ing. Oscar Jiménez</option><option value="Ing. Oliver Cedeño">Ing. Oliver Cedeño</option></select>
+      </div>
+      <div class="nav-btns"><button class="btn-next" style="flex:1" onclick="nextPaso(0)">Siguiente →</button></div>
+    </div>
+
+    <!-- PASO 1 -->
+    <div id="paso-1" style="display:none">
+      <div class="sec-header-form"><div class="sec-icon-form">02 / Calidad de cosecha</div><div class="sec-title-form">Calidad de cosecha</div><div class="sec-sub-form">Peso, formación y madurez</div></div>
+      <div class="slabel">Peso de racimos al azar</div>
+      <div class="pesos-wrap">
+        <div class="pesos-list" id="pesos-list"></div>
+        <div class="peso-input-row"><input type="text" inputmode="decimal" id="peso-input" placeholder="Ej. 18.5 kg"><button class="btn-add-peso" onclick="agregarPeso()">+ Agregar</button></div>
+        <div class="peso-avg" id="peso-avg">Sin pesos registrados</div>
+      </div>
+      <div class="slabel">Cantidad de racimos por % de formación</div>
+      <div>
+        <div class="counter-row"><div><div class="counter-name">Formación 100%</div><div class="counter-sub" style="color:var(--accent)">Racimos completos</div></div><div class="counter-controls"><button class="counter-btn" onclick="cambiarCounter('cal_100',-1)">−</button><div class="counter-val" id="cv-cal_100">0</div><button class="counter-btn" onclick="cambiarCounter('cal_100',1)">+</button></div></div>
+        <div class="counter-row"><div><div class="counter-name">Formación 70%</div><div class="counter-sub" style="color:var(--accent)">Buena formación</div></div><div class="counter-controls"><button class="counter-btn" onclick="cambiarCounter('cal_70',-1)">−</button><div class="counter-val" id="cv-cal_70">0</div><button class="counter-btn" onclick="cambiarCounter('cal_70',1)">+</button></div></div>
+        <div class="counter-row"><div><div class="counter-name">Formación 50%</div><div class="counter-sub" style="color:var(--amber)">Media formación</div></div><div class="counter-controls"><button class="counter-btn" onclick="cambiarCounter('cal_50',-1)">−</button><div class="counter-val" id="cv-cal_50">0</div><button class="counter-btn" onclick="cambiarCounter('cal_50',1)">+</button></div></div>
+        <div class="counter-row"><div><div class="counter-name">Formación 20%</div><div class="counter-sub" style="color:var(--red)">Deficiente</div></div><div class="counter-controls"><button class="counter-btn" onclick="cambiarCounter('cal_20',-1)">−</button><div class="counter-val" id="cv-cal_20">0</div><button class="counter-btn" onclick="cambiarCounter('cal_20',1)">+</button></div></div>
+      </div>
+      <div class="slabel">Estado de madurez — En tambo</div>
+      <div>
+        <div class="counter-row"><div><div class="counter-name">Racimos verdes</div></div><div class="counter-controls"><button class="counter-btn" onclick="cambiarCounter('verdes',-1)">−</button><div class="counter-val" id="cv-verdes">0</div><button class="counter-btn" onclick="cambiarCounter('verdes',1)">+</button></div></div>
+        <div class="counter-row"><div><div class="counter-name">Racimos pintones</div></div><div class="counter-controls"><button class="counter-btn" onclick="cambiarCounter('pintones',-1)">−</button><div class="counter-val" id="cv-pintones">0</div><button class="counter-btn" onclick="cambiarCounter('pintones',1)">+</button></div></div>
+        <div class="counter-row"><div><div class="counter-name">Sobremaduros</div></div><div class="counter-controls"><button class="counter-btn" onclick="cambiarCounter('sobremaduros',-1)">−</button><div class="counter-val" id="cv-sobremaduros">0</div><button class="counter-btn" onclick="cambiarCounter('sobremaduros',1)">+</button></div></div>
+      </div>
+      <div class="slabel">Estado de madurez — En campo</div>
+      <div>
+        <div class="counter-row"><div><div class="counter-name">Frutos sin recoger</div><div class="counter-sub" style="color:var(--amber)">En suelo, sin recolectar</div></div><div class="counter-controls"><button class="counter-btn" onclick="cambiarCounter('frutos_sueltos',-1)">−</button><div class="counter-val" id="cv-frutos_sueltos">0</div><button class="counter-btn" onclick="cambiarCounter('frutos_sueltos',1)">+</button></div></div>
+        <div class="counter-row"><div><div class="counter-name">Fruta sin cortar</div><div class="counter-sub" style="color:var(--red)">Lista para cosechar, omitida</div></div><div class="counter-controls"><button class="counter-btn" onclick="cambiarCounter('fruta_sin_cortar',-1)">−</button><div class="counter-val" id="cv-fruta_sin_cortar">0</div><button class="counter-btn" onclick="cambiarCounter('fruta_sin_cortar',1)">+</button></div></div>
+      </div>
+      <div class="nav-btns"><button class="btn-back" onclick="prevPaso(1)">← Atrás</button><button class="btn-next" onclick="nextPaso(1)">Siguiente →</button></div>
+    </div>
+
+    <!-- PASO 2 -->
+    <div id="paso-2" style="display:none">
+      <div class="sec-header-form"><div class="sec-icon-form">03 / Polinización</div><div class="sec-title-form">Calificación del polinizador</div><div class="sec-sub-form">Lote, conteo e inflorescencias</div></div>
+      <div class="slabel">Identificación</div>
+      <div class="field"><label>Lote evaluado <span class="req">*</span></label><select id="p-lote"><option value="">— seleccionar lote —</option></select></div>
+      <div class="field"><label>Nombre del polinizador <span class="req">*</span></label><input type="text" id="p-polinizador" placeholder="Nombre completo..."></div>
+      <div class="slabel">Conteo de inflorescencias</div>
+      <div>
+        <div class="counter-row"><div><div class="counter-name">Cubiertas desde la base</div><div class="counter-sub" style="color:var(--accent)">Aplicación correcta</div></div><div class="counter-controls"><button class="counter-btn" onclick="cambiarCounter('inf_base',-1);calcPolinAuto()">−</button><div class="counter-val" id="cv-inf_base">0</div><button class="counter-btn" onclick="cambiarCounter('inf_base',1);calcPolinAuto()">+</button></div></div>
+        <div class="counter-row"><div><div class="counter-name">Cubiertas parcialmente</div><div class="counter-sub" style="color:var(--amber)">Aplicación incompleta</div></div><div class="counter-controls"><button class="counter-btn" onclick="cambiarCounter('inf_parcial',-1);calcPolinAuto()">−</button><div class="counter-val" id="cv-inf_parcial">0</div><button class="counter-btn" onclick="cambiarCounter('inf_parcial',1);calcPolinAuto()">+</button></div></div>
+        <div class="counter-row"><div><div class="counter-name">Sin aplicación</div><div class="counter-sub" style="color:var(--red)">No polinizadas</div></div><div class="counter-controls"><button class="counter-btn" onclick="cambiarCounter('inf_sin',-1);calcPolinAuto()">−</button><div class="counter-val" id="cv-inf_sin">0</div><button class="counter-btn" onclick="cambiarCounter('inf_sin',1);calcPolinAuto()">+</button></div></div>
+      </div>
+      <div id="polin-resumen" style="display:none;margin-top:14px">
+        <div class="polin-kpi">
+          <div class="polin-kpi-item"><div class="polin-kpi-val" style="color:var(--accent)" id="pct-correcta">0%</div><div class="polin-kpi-lbl">Correcta</div></div>
+          <div class="polin-kpi-item"><div class="polin-kpi-val" style="color:var(--amber)" id="pct-parcial">0%</div><div class="polin-kpi-lbl">Parcial</div></div>
+          <div class="polin-kpi-item"><div class="polin-kpi-val" style="color:var(--red)" id="pct-sin">0%</div><div class="polin-kpi-lbl">Sin aplicar</div></div>
+        </div>
+      </div>
+      <div class="slabel" style="margin-top:16px">Calidad de aplicación</div>
+      <div class="field">
+        <label>Cantidad de ANA en inflorescencia <span style="color:var(--accent);font-family:var(--mono)">(10 pts)</span></label>
+        <div style="display:flex;gap:8px" id="ana-btns">
+          <button class="escala-btn" style="flex:1" onclick="selANA(this,'Deficiente')" data-ana="Deficiente">Deficiente<br><span style="font-size:10px;color:var(--amber)">5 pts</span></button>
+          <button class="escala-btn" style="flex:1" onclick="selANA(this,'Óptima')" data-ana="Óptima">Óptima<br><span style="font-size:10px;color:var(--accent)">10 pts</span></button>
+          <button class="escala-btn" style="flex:1" onclick="selANA(this,'En exceso')" data-ana="En exceso">En exceso<br><span style="font-size:10px;color:var(--amber)">5 pts</span></button>
+        </div>
+        <input type="hidden" id="f-ana">
+      </div>
+      <div class="field">
+        <label>Correcta apertura de inflorescencia <span style="color:var(--accent);font-family:var(--mono)">(5 pts)</span></label>
+        <div style="display:flex;gap:8px" id="apertura-btns">
+          <button class="escala-btn" style="flex:1" onclick="selApertura(this,'Sí')" data-ap="Sí">Sí<br><span style="font-size:10px;color:var(--accent)">5 pts</span></button>
+          <button class="escala-btn" style="flex:1" onclick="selApertura(this,'No')" data-ap="No">No<br><span style="font-size:10px;color:var(--red)">0 pts</span></button>
+        </div>
+        <input type="hidden" id="f-apertura">
+      </div>
+      <div class="field">
+        <label>Rendimiento por hectárea <span style="color:var(--accent);font-family:var(--mono)">(10 pts)</span></label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="rend-ha-btns">
+          <button class="escala-btn" style="flex:1;min-width:90px" onclick="selRendHa(this,'≥5 ha — Excelente')" data-rha="≥5 ha">≥5 ha<br><span style="font-size:10px;color:var(--accent)">Excelente</span><br><span style="font-size:10px;color:var(--accent)">10 pts</span></button>
+          <button class="escala-btn" style="flex:1;min-width:90px" onclick="selRendHa(this,'4 ha — Muy bueno')" data-rha="4 ha">4 ha<br><span style="font-size:10px">Muy bueno</span><br><span style="font-size:10px;color:var(--accent)">7 pts</span></button>
+          <button class="escala-btn" style="flex:1;min-width:90px" onclick="selRendHa(this,'3 ha — Bueno')" data-rha="3 ha">3 ha<br><span style="font-size:10px">Bueno</span><br><span style="font-size:10px;color:var(--amber)">4 pts</span></button>
+          <button class="escala-btn" style="flex:1;min-width:90px" onclick="selRendHa(this,'<3 ha — Insuficiente')" data-rha="<3 ha">&lt;3 ha<br><span style="font-size:10px;color:var(--red)">Insuficiente</span><br><span style="font-size:10px;color:var(--red)">0 pts</span></button>
+        </div>
+        <input type="hidden" id="f-rend-ha">
+      </div>
+      <div class="slabel" style="margin-top:20px">Calificación del técnico (40 pts)</div>
+      <div class="cal-row"><div class="cal-criterio">Técnica de aplicación</div><div class="cal-desc">Técnica de aplicación: calificación del 1 al 10</div><div class="cal-btns" id="cal-tecnica"><button class="cal-btn" onclick="selCal('tecnica',1,this)">1</button><button class="cal-btn" onclick="selCal('tecnica',2,this)">2</button><button class="cal-btn" onclick="selCal('tecnica',3,this)">3</button><button class="cal-btn" onclick="selCal('tecnica',4,this)">4</button><button class="cal-btn" onclick="selCal('tecnica',5,this)">5</button><button class="cal-btn" onclick="selCal('tecnica',6,this)">6</button><button class="cal-btn" onclick="selCal('tecnica',7,this)">7</button><button class="cal-btn" onclick="selCal('tecnica',8,this)">8</button><button class="cal-btn" onclick="selCal('tecnica',9,this)">9</button><button class="cal-btn" onclick="selCal('tecnica',10,this)">10</button></div></div>
+      <div class="cal-row"><div class="cal-criterio">Cobertura del lote</div><div class="cal-desc">¿Visitó todas las palmas del lote sin omitir?</div><div class="cal-btns" id="cal-cobertura"><button class="cal-btn" onclick="selCal('cobertura',1,this)">1</button><button class="cal-btn" onclick="selCal('cobertura',2,this)">2</button><button class="cal-btn" onclick="selCal('cobertura',3,this)">3</button><button class="cal-btn" onclick="selCal('cobertura',4,this)">4</button><button class="cal-btn" onclick="selCal('cobertura',5,this)">5</button><button class="cal-btn" onclick="selCal('cobertura',6,this)">6</button><button class="cal-btn" onclick="selCal('cobertura',7,this)">7</button><button class="cal-btn" onclick="selCal('cobertura',8,this)">8</button><button class="cal-btn" onclick="selCal('cobertura',9,this)">9</button><button class="cal-btn" onclick="selCal('cobertura',10,this)">10</button></div></div>
+      <div class="cal-row"><div class="cal-criterio">Marcado de hoja polinizada</div><div class="cal-desc">¿Marca correctamente cada flor tratada? (5 pts máx)</div><div class="cal-btns" id="cal-marcado"><button class="cal-btn" onclick="selCal('marcado',1,this)">1</button><button class="cal-btn" onclick="selCal('marcado',2,this)">2</button><button class="cal-btn" onclick="selCal('marcado',3,this)">3</button><button class="cal-btn" onclick="selCal('marcado',4,this)">4</button><button class="cal-btn" onclick="selCal('marcado',5,this)">5</button><button class="cal-btn" onclick="selCal('marcado',6,this)">6</button><button class="cal-btn" onclick="selCal('marcado',7,this)">7</button><button class="cal-btn" onclick="selCal('marcado',8,this)">8</button><button class="cal-btn" onclick="selCal('marcado',9,this)">9</button><button class="cal-btn" onclick="selCal('marcado',10,this)">10</button></div></div>
+      <div class="cal-row"><div class="cal-criterio">Cuidado de equipos y JACO</div><div class="cal-desc">Estado del aspersor, JACO, recipientes y almacenamiento del polen (5 pts máx)</div><div class="cal-btns" id="cal-equipos"><button class="cal-btn" onclick="selCal('equipos',1,this)">1</button><button class="cal-btn" onclick="selCal('equipos',2,this)">2</button><button class="cal-btn" onclick="selCal('equipos',3,this)">3</button><button class="cal-btn" onclick="selCal('equipos',4,this)">4</button><button class="cal-btn" onclick="selCal('equipos',5,this)">5</button><button class="cal-btn" onclick="selCal('equipos',6,this)">6</button><button class="cal-btn" onclick="selCal('equipos',7,this)">7</button><button class="cal-btn" onclick="selCal('equipos',8,this)">8</button><button class="cal-btn" onclick="selCal('equipos',9,this)">9</button><button class="cal-btn" onclick="selCal('equipos',10,this)">10</button></div></div>
+      <div class="nota-auto" id="nota-auto" style="display:none">
+        <div class="nota-lbl">Calificación total del polinizador</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="nota-badge"><div class="nota-badge-num" id="nota-total">—</div><div class="nota-badge-den">/ 100</div></div>
+          <div id="nota-semaforo" style="font-size:24px"></div>
+        </div>
+        <div class="nota-breakdown" id="nota-breakdown" style="font-family:var(--mono);font-size:11px;color:var(--muted2);margin-top:6px;line-height:1.8"></div>
+      </div>
+      <button onclick="agregarPolinizador()" style="width:100%;margin-top:16px;padding:13px;background:transparent;color:var(--accent);font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;border:1px solid rgba(184,240,74,.3);border-radius:12px;cursor:pointer">+ Agregar polinizador</button>
+      <div id="polin-lista" style="display:none;margin-top:16px">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Polinizadores evaluados</div>
+        <div id="polin-lista-items"></div>
+      </div>
+      <div class="nav-btns"><button class="btn-back" onclick="prevPaso(2)">← Atrás</button><button class="btn-next" onclick="nextPaso(2)">Siguiente →</button></div>
+    </div>
+
+    <!-- PASO 3 -->
+    <div id="paso-3" style="display:none">
+      <div class="sec-header-form"><div class="sec-icon-form">04 / Sanidad y gestión</div><div class="sec-title-form">Campo y agronomía</div><div class="sec-sub-form">Estado general de la finca</div></div>
+      <div class="slabel">Deficiencias nutricionales</div>
+      <div class="field">
+        <label>% Palmas con deficiencia visible</label>
+        <div style="display:flex;gap:8px" id="deficiencia-btns">
+          <button class="escala-btn" style="flex:1" onclick="selDefPct(this,'<20%')" data-defpct="<20%">&lt;20%<br><span style="font-size:10px;color:var(--accent)">Leve</span></button>
+          <button class="escala-btn" style="flex:1" onclick="selDefPct(this,'20-50%')" data-defpct="20-50%">20-50%<br><span style="font-size:10px;color:var(--amber)">Moderado</span></button>
+          <button class="escala-btn" style="flex:1" onclick="selDefPct(this,'>50%')" data-defpct=">50%">&gt;50%<br><span style="font-size:10px;color:var(--red)">Crítico</span></button>
+        </div>
+        <input type="hidden" id="f-deficiencia-pct">
+      </div>
+      <div class="field">
+        <label>Tipo de deficiencia</label>
+        <div class="chips-wrap">
+          <div class="chip" onclick="toggleChip(this,'def')" data-val="Boro (B)">Boro (B)</div>
+          <div class="chip" onclick="toggleChip(this,'def')" data-val="Magnesio (Mg)">Magnesio (Mg)</div>
+          <div class="chip" onclick="toggleChip(this,'def')" data-val="Potasio (K)">Potasio (K)</div>
+          <div class="chip" onclick="toggleChip(this,'def')" data-val="Nitrógeno (N)">Nitrógeno (N)</div>
+          <div class="chip" onclick="toggleChip(this,'def')" data-val="Zinc (Zn)">Zinc (Zn)</div>
+          <div class="chip" onclick="toggleChip(this,'def')" data-val="Hierro (Fe)">Hierro (Fe)</div>
+          <div class="chip" onclick="toggleChip(this,'def')" data-val="Cobre (Cu)">Cobre (Cu)</div>
+          <div class="chip" onclick="toggleChip(this,'def','otro-def')" data-val="Otro">Otro</div>
+        </div>
+        <input type="text" id="otro-def" class="otro-input" placeholder="Especificar deficiencia...">
+        <input type="hidden" id="f-deficiencias">
+      </div>
+      <div class="slabel">Plagas y enfermedades</div>
+      <div class="field">
+        <label>Presencia detectada</label>
+        <div class="chips-wrap">
+          <div class="chip" onclick="toggleChip(this,'plaga')" data-val="Rhynchophorus (picudo)">Picudo</div>
+          <div class="chip" onclick="toggleChip(this,'plaga')" data-val="Pudrición de cogollo (PC)">PC</div>
+          <div class="chip" onclick="toggleChip(this,'plaga')" data-val="Marchitez sorpresiva">Marchitez</div>
+          <div class="chip" onclick="toggleChip(this,'plaga')" data-val="Anillo rojo">Anillo rojo</div>
+          <div class="chip" onclick="toggleChip(this,'plaga')" data-val="Gualpa (Opsiphanes)">Gualpa</div>
+          <div class="chip" onclick="toggleChip(this,'plaga')" data-val="Strategus (cucarrón)">Strategus</div>
+          <div class="chip" onclick="toggleChip(this,'plaga')" data-val="Hongos en raíz">Hongos raíz</div>
+          <div class="chip" onclick="toggleChip(this,'plaga')" data-val="Sin presencia">Sin presencia</div>
+          <div class="chip" onclick="toggleChip(this,'plaga','otro-plaga')" data-val="Otro">Otro</div>
+        </div>
+        <input type="text" id="otro-plaga" class="otro-input" placeholder="Especificar plaga o enfermedad...">
+        <input type="hidden" id="f-plagas">
+      </div>
+      <div class="field">
+        <label>% Palmas afectadas por plagas/enfermedades</label>
+        <div style="display:flex;gap:8px" id="plagas-pct-btns">
+          <button class="escala-btn" style="flex:1" onclick="selPlagaPct(this,'<20%')" data-plagapct="<20%">&lt;20%<br><span style="font-size:10px;color:var(--accent)">Leve</span></button>
+          <button class="escala-btn" style="flex:1" onclick="selPlagaPct(this,'20-50%')" data-plagapct="20-50%">20-50%<br><span style="font-size:10px;color:var(--amber)">Moderado</span></button>
+          <button class="escala-btn" style="flex:1" onclick="selPlagaPct(this,'>50%')" data-plagapct=">50%">&gt;50%<br><span style="font-size:10px;color:var(--red)">Crítico</span></button>
+        </div>
+        <input type="hidden" id="f-plagas-pct">
+      </div>
+      <div class="slabel">Gestión agronómica</div>
+      <div class="field"><label>% Cobertura de maleza</label>
+        <select id="f-maleza"><option value="">— seleccionar —</option><option value="10">10% — Limpio</option><option value="25">25% — Poca maleza</option><option value="50">50% — Cobertura media</option><option value="75">75% — Alta cobertura</option><option value="90">90% — Muy alta / urgente</option></select>
+      </div>
+      <div class="field"><label>Estado de poda — hojas por podar</label>
+        <div class="escala-row">
+          <button class="escala-btn" onclick="selEscala(this,'poda','0 hojas')" data-field="poda">0</button>
+          <button class="escala-btn" onclick="selEscala(this,'poda','1 a 2 hojas')" data-field="poda">1-2</button>
+          <button class="escala-btn" onclick="selEscala(this,'poda','3 a 5 hojas')" data-field="poda">3-5</button>
+          <button class="escala-btn" onclick="selEscala(this,'poda','mas de 5 hojas')" data-field="poda">>5</button>
+        </div>
+        <input type="hidden" id="f-poda">
+      </div>
+      <div class="slabel">Notas</div>
+      <div class="field"><label>Observaciones generales</label><textarea id="f-obs" placeholder="Novedades, condiciones del suelo, actividades pendientes..."></textarea></div>
+      <div class="nav-btns"><button class="btn-back" onclick="prevPaso(3)">← Atrás</button><button class="btn-next" onclick="nextPaso(3)">Revisar y enviar →</button></div>
+    </div>
+
+    <!-- PASO 4 -->
+    <div id="paso-4" style="display:none">
+      <div class="sec-header-form"><div class="sec-icon-form">05 / Confirmación</div><div class="sec-title-form">Resumen del registro</div><div class="sec-sub-form">Revisa antes de guardar</div></div>
+      <div id="resumen-contenido"></div>
+      <div class="nav-btns"><button class="btn-back" onclick="prevPaso(4)">← Atrás</button><button class="btn-next" id="btn-enviar" onclick="enviar()">Guardar en Sheets</button></div>
+    </div>
+
+    <!-- PASO 5 -->
+    <div id="paso-5" style="display:none">
+      <div class="confirm-wrap">
+        <div class="confirm-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b8f04a" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="confirm-title">Registro guardado</div>
+        <div class="confirm-sub" id="confirm-sub"></div>
+        <div class="confirm-details" id="confirm-details"></div>
+        <button class="btn-nuevo" onclick="nuevoPolinizador()" style="margin-bottom:10px">Calificar otro polinizador</button>
+        <button style="width:100%;padding:13px;background:transparent;color:var(--muted2);font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--border);border-radius:12px;cursor:pointer;margin-bottom:10px" onclick="nuevoRegistro()">Registrar otra finca</button>
+        <button style="width:100%;padding:13px;background:transparent;color:var(--accent);font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid rgba(184,240,74,.3);border-radius:12px;cursor:pointer" onclick="irDashboard()">Ver dashboard →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxfQLFt4hMUlhrdFkfz-cnghpcWjYNBqxCai4sWew-IBS0JPGXcw6lLTqm8kqrA5Iss/exec';
+const FINCAS=['Los Corrales','Andino','Chipo','Castañeda','Marujita'];
+const LOTES={'Los Corrales':['CO-1','CO-2','CO-3','CO-4','CO-5'],'Andino':['AN-1','AN-2','AN-3','AN-4'],'Chipo':['CH-1','CH-2','CH-3'],'Castañeda':['CA-1','CA-2'],'Marujita':['Lote 1','Lote 2','Lote 3']};
+const PASOS=['Identificación','Calidad cosecha','Polinización','Sanidad y gestión','Confirmación'];
+const C={fecha:0,semana:1,finca:2,lote_nov:3,by:4,rac_pesados:5,peso_prom:6,cal100:7,cal70:8,cal50:9,cal20:10,verdes:11,pintones:12,sobremaduros:13,frutos_sin:14,fruta_sin_cortar:15,lote_polin:16,polinizador:17,inf_base:18,inf_parcial:19,inf_sin:20,ana:21,apertura:22,rend_ha:23,cal_tec:24,cal_cob:25,cal_mar:26,cal_eq:27,nota:28,def_pct:29,tipo_def:30,plagas:31,maleza:32,poda:33,obs:34};
+
+let allData=[],semanaActiva='todas',mesActivo='todas';
+let polinizadores=[];
+let counters={verdes:0,pintones:0,sobremaduros:0,frutos_sueltos:0,fruta_sin_cortar:0,inf_base:0,inf_parcial:0,inf_sin:0,deficiencia:0,cal_100:0,cal_70:0,cal_50:0,cal_20:0};
+let pesos=[],selDeficiencias=[],selPlagas=[];
+let calTecnica=0,calCobertura=0,calMarcado=0,calEquipos=0;
+
+// INIT
+const hoyStr=new Date().toLocaleDateString('es-EC',{weekday:'short',day:'numeric',month:'short'}).toUpperCase();
+document.getElementById('topbar-date').textContent=hoyStr;
+document.getElementById('f-fecha').value=new Date().toISOString().split('T')[0];
+
+// MAIN TAB SWITCH
+function goMainTab(tab){
+  document.querySelectorAll('.main-tab').forEach((t,i)=>t.classList.toggle('active',['dashboard','registro'][i]===tab));
+  document.getElementById('main-dashboard').style.display=tab==='dashboard'?'block':'none';
+  document.getElementById('main-registro').style.display=tab==='registro'?'block':'none';
+  if(tab==='dashboard') cargarDatos();
+}
+
+function irDashboard(){ goMainTab('dashboard'); }
+
+// ════════════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════════════
+function cargarDatos(){
+  document.getElementById('loading').style.display='block';
+  document.getElementById('main-content').style.display='none';
+  const cbName='_cb_'+Date.now();
+  window[cbName]=function(json){
+    delete window[cbName];
+    const s=document.getElementById('jsonp-script');
+    if(s) s.remove();
+    if(json.ok&&json.registros){
+      allData=json.registros.slice(1).filter(r=>r[C.finca]&&r[C.fecha]);
+      buildSemanaFilter();
+      renderAll();
+    }
+    document.getElementById('loading').style.display='none';
+    document.getElementById('main-content').style.display='block';
+  };
+  const script=document.createElement('script');
+  script.id='jsonp-script';
+  script.src=SCRIPT_URL+'?callback='+cbName;
+  script.onerror=function(){ document.getElementById('loading').innerHTML='<span style="color:var(--red)">// sin conexión</span>'; };
+  document.head.appendChild(script);
+}
+
+function buildSemanaFilter(){
+  const semanas=[...new Set(allData.map(r=>r[C.semana]))].filter(Boolean).sort((a,b)=>b-a).slice(0,8);
+  document.getElementById('semana-filter').innerHTML=
+    `<button class="sem-btn active" onclick="setSemana('todas',this)">Todas</button>`+
+    semanas.map(s=>`<button class="sem-btn" onclick="setSemana('${s}',this)">Sem ${s}</button>`).join('');
+
+  const MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const meses=[...new Set(allData.map(r=>{
+    const d=new Date(r[C.fecha]); return isNaN(d)?null:d.getMonth();
+  }).filter(m=>m!==null))].sort((a,b)=>a-b);
+  document.getElementById('mes-filter').innerHTML=
+    `<button class="sem-btn active" onclick="setMes('todas',this)">Todos</button>`+
+    meses.map(m=>`<button class="sem-btn" onclick="setMes('${m}',this)">${MESES[m]}</button>`).join('');
+}
+
+function switchFilter(tipo){
+  document.getElementById('filter-tab-mes').classList.toggle('active', tipo==='mes');
+  document.getElementById('filter-tab-sem').classList.toggle('active', tipo==='semana');
+  document.getElementById('mes-filter').style.display=tipo==='mes'?'flex':'none';
+  document.getElementById('semana-filter').style.display=tipo==='semana'?'flex':'none';
+  semanaActiva='todas'; mesActivo='todas';
+  renderAll();
+}
+
+function setMes(m, btn){
+  mesActivo=m;
+  document.querySelectorAll('#mes-filter .sem-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+function setSemana(s,btn){
+  semanaActiva=s;
+  document.querySelectorAll('#semana-filter .sem-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+function getData(){
+  let data=allData;
+  if(semanaActiva!=='todas') data=data.filter(r=>String(r[C.semana])===String(semanaActiva));
+  if(mesActivo!=='todas') data=data.filter(r=>{
+    const d=new Date(r[C.fecha]); return !isNaN(d)&&d.getMonth()===parseInt(mesActivo);
+  });
+  return data;
+}
+
+function getUltimaRonda(data){
+  const ur={};
+  data.forEach(r=>{ const f=r[C.finca],fecha=new Date(r[C.fecha]); if(!ur[f]||fecha>new Date(ur[f][C.fecha])) ur[f]=r; });
+  return ur;
+}
+
+function color3(v,g,m){ return v>=g?'var(--accent)':v>=m?'var(--amber)':'var(--red)'; }
+
+function renderAll(){
+  const data=getData(), ur=getUltimaRonda(data);
+  let html='';
+
+  // KPIs
+  const pesosV=data.filter(r=>Number(r[C.peso_prom])>0);
+  const promPeso=pesosV.length?(pesosV.reduce((s,r)=>s+Number(r[C.peso_prom]),0)/pesosV.length).toFixed(1):'—';
+  const dpolin=data.filter(r=>r[C.polinizador]&&(Number(r[C.inf_base])+Number(r[C.inf_parcial])+Number(r[C.inf_sin]))>0);
+  const promNota=dpolin.length?(dpolin.reduce((s,r)=>s+Number(r[C.nota]),0)/dpolin.length).toFixed(0):'—';
+  const tBase=dpolin.reduce((s,r)=>s+Number(r[C.inf_base]),0);
+  const tAll=dpolin.reduce((s,r)=>s+(Number(r[C.inf_base])+Number(r[C.inf_parcial])+Number(r[C.inf_sin])),0);
+  const pctPolin=tAll>0?Math.round(tBase/tAll*100):0;
+  html+=`<div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-lbl">Peso prom.</div><div class="kpi-val" style="color:${color3(parseFloat(promPeso),18,14)}">${promPeso}<span style="font-size:10px;color:var(--muted)"> kg</span></div><div class="kpi-sub">racimo</div></div>
+    <div class="kpi-card"><div class="kpi-lbl">Polinización</div><div class="kpi-val" style="color:${color3(pctPolin,80,60)}">${pctPolin}<span style="font-size:10px;color:var(--muted)">%</span></div><div class="kpi-sub">correcta</div></div>
+    <div class="kpi-card"><div class="kpi-lbl">Nota prom.</div><div class="kpi-val" style="color:${color3(parseFloat(promNota),80,60)}">${promNota}<span style="font-size:10px;color:var(--muted)">/100</span></div><div class="kpi-sub">polinizadores</div></div>
+  </div>`;
+
+  // Alertas
+  const alertas=[];
+  FINCAS.forEach(f=>{ const r=ur[f]; if(!r) return;
+    const pl=r[C.plagas],pp=r[C.pct_plagas],def=r[C.tipo_def],dp=r[C.def_pct];
+    if(pl&&!pl.includes('Sin presencia')){
+      if(pp==='>50%') alertas.push({n:'red',t:`${f} — Plagas críticas`,s:`${pl} · ${pp}`});
+      else alertas.push({n:'amber',t:`${f} — Plagas detectadas`,s:`${pl} · ${pp||'<20%'}`});
+    }
+    if(def){
+      if(dp==='>50%') alertas.push({n:'red',t:`${f} — Deficiencia crítica`,s:`${def} · ${dp}`});
+      else if(dp==='20-50%') alertas.push({n:'amber',t:`${f} — Deficiencia moderada`,s:`${def} · ${dp}`});
+    }
+  });
+  if(!alertas.length) alertas.push({n:'green',t:'Sin alertas activas',s:'Todas las fincas en estado normal'});
+  html+=`<div class="section"><div class="sec-header"><div class="sec-icon">Alertas</div></div>
+    ${alertas.map(a=>`<div class="alerta-item alerta-${a.n}"><div class="alerta-dot" style="background:${a.n==='red'?'var(--red)':a.n==='amber'?'var(--amber)':'var(--accent)'}"></div><div><div class="alerta-title">${a.t}</div><div class="alerta-sub">${a.s}</div></div></div>`).join('')}
+  </div>`;
+
+  // Calidad cosecha
+  const maxPeso=Math.max(...FINCAS.map(f=>{ const r=data.filter(x=>x[C.finca]===f&&Number(x[C.peso_prom])>0); return r.length?r.reduce((s,x)=>s+Number(x[C.peso_prom]),0)/r.length:0; }),1);
+  html+=`<div class="section"><div class="sec-header"><div class="sec-icon">Calidad cosecha</div><div class="sec-title">Peso · Formación · Madurez</div></div>`;
+  html+=FINCAS.map(f=>{
+    const rows=data.filter(r=>r[C.finca]===f&&Number(r[C.peso_prom])>0);
+    if(!rows.length) return `<div class="finca-row"><div class="finca-name">${f}</div><div class="finca-val" style="color:var(--muted)">—</div></div>`;
+    const prom=(rows.reduce((s,r)=>s+Number(r[C.peso_prom]),0)/rows.length).toFixed(1);
+    const pct=Math.round(prom/maxPeso*100);
+    const col=color3(parseFloat(prom),18,14);
+    return `<div class="finca-row"><div style="flex:1"><div class="finca-name">${f}</div><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div></div><div style="margin-left:12px;text-align:right"><div class="finca-val" style="color:${col}">${prom} kg</div></div></div>`;
+  }).join('');
+  html+=`<div style="height:10px"></div>`;
+  html+=FINCAS.map(f=>{
+    const r=ur[f]; if(!r) return '';
+    const t=Number(r[C.cal100])+Number(r[C.cal70])+Number(r[C.cal50])+Number(r[C.cal20]);
+    const sinR=Number(r[C.frutos_sin])||0, sinC=Number(r[C.fruta_sin_cortar])||0;
+    if(!t&&!sinR&&!sinC) return '';
+    const pctB=t>0?Math.round((Number(r[C.cal100])+Number(r[C.cal70]))/t*100):null;
+    const col=pctB!==null?color3(pctB,70,50):'var(--muted2)';
+    return `<div class="finca-row"><div style="flex:1"><div class="finca-name">${f}</div><div class="finca-meta">${t?`${pctB}% bien formados`:''}${(sinR||sinC)?(t?' · ':'')+`${sinR+sinC} pend.`:''}</div></div>${pctB!==null?`<div class="finca-val" style="color:${col}">${pctB}%</div>`:''}</div>`;
+  }).filter(Boolean).join('');
+  html+=`</div>`;
+
+  // Polinización ranking
+  const byP={};
+  dpolin.forEach(r=>{ const n=r[C.polinizador]; if(!n) return;
+    if(!byP[n]) byP[n]={notas:[],corrects:0,total:0,fincas:new Set()};
+    byP[n].notas.push(Number(r[C.nota]));
+    byP[n].corrects+=Number(r[C.inf_base])||0;
+    byP[n].total+=(Number(r[C.inf_base])||0)+(Number(r[C.inf_parcial])||0)+(Number(r[C.inf_sin])||0);
+    byP[n].fincas.add(r[C.finca]);
+  });
+  const ranking=Object.entries(byP).map(([n,d])=>({nombre:n,notaProm:(d.notas.reduce((a,b)=>a+b,0)/d.notas.length).toFixed(0),eval:d.notas.length,pctC:d.total>0?Math.round(d.corrects/d.total*100):0,finca:[...d.fincas].join(', ')})).sort((a,b)=>b.notaProm-a.notaProm);
+  html+=`<div class="section"><div class="sec-header"><div class="sec-icon">Polinización</div><div class="sec-title">Ranking · Cobertura</div></div>`;
+  if(!ranking.length) html+=`<div class="empty">Sin evaluaciones</div>`;
+  else html+=ranking.map((p,i)=>{ const n=parseFloat(p.notaProm),col=color3(n,80,60),sem=n>=80?'🟢':n>=60?'🟡':'🔴';
+    return `<div class="rank-item"><div class="rank-num">#${i+1}</div><div class="rank-info"><div class="rank-name">${p.nombre}</div><div class="rank-meta">${p.finca} · ${p.eval} eval. · ${p.pctC}% inf. correctas</div></div><div class="rank-nota"><div class="rank-nota-num" style="color:${col}">${p.notaProm}</div><div class="rank-nota-den">/100 ${sem}</div></div></div>`;
+  }).join('');
+  html+=`<div style="height:10px"></div>`;
+  html+=FINCAS.map(f=>{ const rows=dpolin.filter(r=>r[C.finca]===f); if(!rows.length) return '';
+    const base=rows.reduce((s,r)=>s+Number(r[C.inf_base]),0),all=rows.reduce((s,r)=>s+(Number(r[C.inf_base])+Number(r[C.inf_parcial])+Number(r[C.inf_sin])),0);
+    const pct=all>0?Math.round(base/all*100):0,col=color3(pct,80,60);
+    return `<div class="finca-row"><div style="flex:1"><div class="finca-name">${f}</div><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div></div><div class="finca-val" style="color:${col};margin-left:12px">${pct}%</div></div>`;
+  }).filter(Boolean).join('');
+  html+=`</div>`;
+
+  // Sanidad
+  html+=`<div class="section"><div class="sec-header"><div class="sec-icon">Sanidad</div><div class="sec-title">Plagas · Deficiencias</div></div>`;
+  html+=FINCAS.map(f=>{ const r=ur[f]; if(!r) return '';
+    const pl=r[C.plagas],pp=r[C.pct_plagas],def=r[C.tipo_def],dp=r[C.def_pct];
+    const sinPl=!pl||pl.includes('Sin presencia'),sinDef=!def;
+    if(sinPl&&sinDef) return `<div class="finca-row"><div class="finca-name">${f}</div><div class="finca-val" style="color:var(--accent);font-size:12px">Sin alertas</div></div>`;
+    return `<div class="finca-row"><div style="flex:1"><div class="finca-name">${f}</div>${!sinPl?`<div class="finca-meta" style="color:${pp==='>50%'?'var(--red)':'var(--amber)'}">${pl} · ${pp||'<20%'}</div>`:''} ${!sinDef?`<div class="finca-meta" style="color:${dp==='>50%'?'var(--red)':dp==='20-50%'?'var(--amber)':'var(--muted2)'}">${def} · ${dp||'<20%'}</div>`:''}</div></div>`;
+  }).filter(Boolean).join('');
+  html+=`</div>`;
+
+  // Gestión agronómica
+  const MCOL={'10':'var(--accent)','25':'var(--accent)','50':'var(--amber)','75':'var(--red)','90':'var(--red)'};
+  const PCOL={'0 hojas':'var(--accent)','1 a 2 hojas':'var(--accent)','3 a 5 hojas':'var(--amber)','mas de 5 hojas':'var(--red)','0':'var(--accent)'};
+  html+=`<div class="section"><div class="sec-header"><div class="sec-icon">Gestión agronómica</div><div class="sec-title">Maleza · Poda</div></div>`;
+  html+=FINCAS.map(f=>{ const r=ur[f]; if(!r) return `<div class="agro-row"><div class="finca-name">${f}</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">Sin datos</div></div>`;
+    const m=String(r[C.maleza]||''),p=String(r[C.poda]||''),mc=MCOL[m]||'var(--muted2)',pc=PCOL[p]||'var(--muted2)';
+    return `<div class="agro-row"><div class="finca-name">${f}</div><div class="agro-badges"><div class="badge" style="color:${mc}">Maleza ${m?m+'%':'—'}</div><div class="badge" style="color:${pc}">Poda ${p||'—'}</div></div></div>`;
+  }).join('');
+  html+=`</div>`;
+
+
+
+  // ── TENDENCIA SEMANAL ─────────────────────────
+  const semanas = [...new Set(allData.map(r=>r[C.semana]))].filter(Boolean).sort((a,b)=>a-b);
+  const ultimas6 = semanas.slice(-6);
+
+  if(ultimas6.length >= 2){
+    html+=`<div class="section"><div class="sec-header"><div class="sec-icon">Tendencia</div><div class="sec-title">Evolución semanal</div></div>`;
+
+    // Build weekly data
+    const weekData = ultimas6.map(sem => {
+      const rows = allData.filter(r => String(r[C.semana]) === String(sem));
+      const polinRows = rows.filter(r => r[C.polinizador] && (Number(r[C.inf_base])+Number(r[C.inf_parcial])+Number(r[C.inf_sin]))>0);
+      const tBase = polinRows.reduce((s,r)=>s+Number(r[C.inf_base]),0);
+      const tAll  = polinRows.reduce((s,r)=>s+(Number(r[C.inf_base])+Number(r[C.inf_parcial])+Number(r[C.inf_sin])),0);
+      const pesosV = rows.filter(r=>Number(r[C.peso_prom])>0);
+      const calRows = rows.filter(r=>(Number(r[C.cal100])+Number(r[C.cal70])+Number(r[C.cal50])+Number(r[C.cal20]))>0);
+      const tCal = calRows.reduce((s,r)=>s+Number(r[C.cal100])+Number(r[C.cal70])+Number(r[C.cal50])+Number(r[C.cal20]),0);
+      const tBuenos = calRows.reduce((s,r)=>s+Number(r[C.cal100])+Number(r[C.cal70]),0);
+      return {
+        sem,
+        polin: tAll>0 ? Math.round(tBase/tAll*100) : null,
+        nota:  polinRows.length>0 ? Math.round(polinRows.reduce((s,r)=>s+Number(r[C.nota]),0)/polinRows.length) : null,
+        peso:  pesosV.length>0 ? parseFloat((pesosV.reduce((s,r)=>s+Number(r[C.peso_prom]),0)/pesosV.length).toFixed(1)) : null,
+        calidad: tCal>0 ? Math.round(tBuenos/tCal*100) : null
+      };
+    });
+
+    const indicadores = [
+      {key:'polin', label:'% Inf. correctas', good:80, mid:60, unit:'%', max:100},
+      {key:'nota',  label:'Nota polinizadores', good:80, mid:60, unit:'/100', max:100},
+      {key:'peso',  label:'Peso racimo', good:18, mid:14, unit:' kg', max:30},
+      {key:'calidad',label:'Calidad formación', good:70, mid:50, unit:'%', max:100}
+    ];
+
+    // Semana headers
+    html+=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px">`;
+    html+=`<tr><td style="padding:4px 8px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em;min-width:110px">Indicador</td>`;
+    weekData.forEach(w=>{ html+=`<td style="padding:4px 8px;text-align:center;color:var(--muted);font-size:10px">Sem ${w.sem}</td>`; });
+    html+=`<td style="padding:4px 8px;text-align:center;color:var(--muted);font-size:10px">Tendencia</td></tr>`;
+
+    indicadores.forEach(ind => {
+      const vals = weekData.map(w => w[ind.key]);
+      const last = vals[vals.length-1];
+      const prev = vals[vals.length-2];
+      const trend = last===null||prev===null ? '→' : last>prev ? '↑' : last<prev ? '↓' : '→';
+      const trendColor = trend==='↑'?'var(--accent)':trend==='↓'?'var(--red)':'var(--amber)';
+
+      html+=`<tr style="border-top:1px solid var(--border)">`;
+      html+=`<td style="padding:8px 8px;color:var(--muted2);font-size:11px">${ind.label}</td>`;
+      vals.forEach((v,i) => {
+        const prev_v = i>0 ? vals[i-1] : null;
+        let bg='transparent', txtColor='var(--muted)';
+        if(v!==null){
+          txtColor = v>=ind.good?'var(--accent)':v>=ind.mid?'var(--amber)':'var(--red)';
+          bg = v>=ind.good?'rgba(184,240,74,.06)':v>=ind.mid?'rgba(240,168,48,.06)':'rgba(240,80,80,.06)';
+        }
+        html+=`<td style="padding:8px 4px;text-align:center;background:${bg};border-radius:4px">`;
+        if(v!==null) html+=`<span style="color:${txtColor};font-weight:500">${v}${ind.unit}</span>`;
+        else html+=`<span style="color:var(--muted)">—</span>`;
+        html+=`</td>`;
+      });
+      // Trend mini sparkline
+      const sparkVals = vals.filter(v=>v!==null);
+      let sparkHtml = '';
+      if(sparkVals.length>=2){
+        const minV=Math.min(...sparkVals), maxV=Math.max(...sparkVals);
+        const range=maxV-minV||1;
+        const w=40, h=24;
+        const points = vals.map((v,i)=>{
+          const x = vals.length>1 ? Math.round(i/(vals.length-1)*w) : w/2;
+          const y = v!==null ? Math.round(h - ((v-minV)/range)*(h-4) - 2) : null;
+          return {x,y};
+        }).filter(p=>p.y!==null);
+        const polyline = points.map(p=>`${p.x},${p.y}`).join(' ');
+        sparkHtml = `<svg width="${w}" height="${h}" style="overflow:visible"><polyline points="${polyline}" fill="none" stroke="${trendColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>${points.map((p,i)=>i===points.length-1?`<circle cx="${p.x}" cy="${p.y}" r="2.5" fill="${trendColor}"/>`:'').join('')}</svg>`;
+      }
+      html+=`<td style="padding:4px 8px;text-align:center">`;
+      html+=sparkHtml;
+      html+=`<div style="color:${trendColor};font-size:14px;font-weight:500;margin-top:2px">${trend}</div>`;
+      html+=`</td></tr>`;
+    });
+
+    html+=`</table></div></div>`;
+  }
+
+  document.getElementById('main-content').innerHTML=html;
+}
+
+// ════════════════════════════════════════
+//  FORMULARIO
+// ════════════════════════════════════════
+document.getElementById('f-finca').addEventListener('change',function(){
+  const f=this.value;
+  const s=document.getElementById('f-lote'); s.innerHTML='<option value="">Sin novedad específica</option>';
+  const p=document.getElementById('p-lote'); p.innerHTML='<option value="">— seleccionar lote —</option>';
+  (LOTES[f]||[]).forEach(l=>{ const o=document.createElement('option'); o.value=l; o.textContent=l; s.appendChild(o.cloneNode(true)); p.appendChild(o); });
+});
+
+function updateProgress(paso){
+  for(let i=0;i<5;i++){ const d=document.getElementById('sd-'+i); d.className='step-dot'+(i<paso?' done':i===paso?' active':''); }
+  document.getElementById('progress-label').textContent=`Paso ${paso+1} de 5 — ${PASOS[paso]}`;
+}
+
+function nextPaso(actual){
+  document.getElementById('msg-error').style.display='none';
+  if(actual===0){
+    if(!document.getElementById('f-fecha').value){showError('Ingresa la fecha');return;}
+    if(!document.getElementById('f-finca').value){showError('Selecciona una finca');return;}
+    if(!document.getElementById('f-by').value){showError('Selecciona quién registra');return;}
+  }
+  if(actual===3) generarResumen();
+  document.getElementById('paso-'+actual).style.display='none';
+  document.getElementById('paso-'+(actual+1)).style.display='block';
+  updateProgress(actual+1);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function prevPaso(actual){
+  document.getElementById('paso-'+actual).style.display='none';
+  document.getElementById('paso-'+(actual-1)).style.display='block';
+  updateProgress(actual-1);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function agregarPeso(){
+  const inp=document.getElementById('peso-input');
+  const val=parseFloat(inp.value.replace(',','.'));
+  if(!val||val<=0) return;
+  pesos.push(val); inp.value=''; renderPesos();
+}
+document.getElementById('peso-input').addEventListener('keydown',e=>{if(e.key==='Enter')agregarPeso();});
+function renderPesos(){
+  document.getElementById('pesos-list').innerHTML=pesos.map((p,i)=>`<div class="peso-tag">${p} kg<button onclick="removePeso(${i})">×</button></div>`).join('');
+  const avg=document.getElementById('peso-avg');
+  if(pesos.length>0){ const pr=(pesos.reduce((a,b)=>a+b,0)/pesos.length).toFixed(2); avg.innerHTML=`${pesos.length} racimo${pesos.length>1?'s':''} · Promedio: <span>${pr} kg</span>`; }
+  else avg.textContent='Sin pesos registrados';
+}
+function removePeso(i){pesos.splice(i,1);renderPesos();}
+
+function cambiarCounter(key,delta){ counters[key]=Math.max(0,(counters[key]||0)+delta); const el=document.getElementById('cv-'+key); if(el) el.textContent=counters[key]; }
+
+function calcPolinAuto(){
+  const total=counters.inf_base+counters.inf_parcial+counters.inf_sin;
+  const res=document.getElementById('polin-resumen');
+  if(total>0){ res.style.display='block'; document.getElementById('pct-correcta').textContent=Math.round(counters.inf_base/total*100)+'%'; document.getElementById('pct-parcial').textContent=Math.round(counters.inf_parcial/total*100)+'%'; document.getElementById('pct-sin').textContent=Math.round(counters.inf_sin/total*100)+'%'; }
+  else res.style.display='none';
+  calcNotaTotal();
+}
+
+function selANA(el,val){ document.querySelectorAll('[data-ana]').forEach(b=>b.className='escala-btn'); el.classList.add(val==='Óptima'?'sel-2':val==='Deficiente'?'sel-4':'sel-3'); document.getElementById('f-ana').value=val; calcNotaTotal(); }
+function selApertura(el,val){ document.querySelectorAll('[data-ap]').forEach(b=>b.className='escala-btn'); el.classList.add(val==='Sí'?'sel-2':'sel-4'); document.getElementById('f-apertura').value=val; calcNotaTotal(); }
+function selRendHa(el,val){ document.querySelectorAll('[data-rha]').forEach(b=>{b.className='escala-btn';b.style.flex='1';b.style.minWidth='90px';}); el.classList.add(val.includes('Excelente')?'sel-2':val.includes('Muy bueno')?'sel-2':val.includes('Bueno')?'sel-3':'sel-4'); document.getElementById('f-rend-ha').value=val; calcNotaTotal(); }
+function selDefPct(el,val){ document.querySelectorAll('[data-defpct]').forEach(b=>b.className='escala-btn'); el.classList.add(val==='<20%'?'sel-2':val==='20-50%'?'sel-3':'sel-4'); document.getElementById('f-deficiencia-pct').value=val; }
+function selPlagaPct(el,val){ document.querySelectorAll('[data-plagapct]').forEach(b=>b.className='escala-btn'); el.classList.add(val==='<20%'?'sel-2':val==='20-50%'?'sel-3':'sel-4'); document.getElementById('f-plagas-pct').value=val; }
+
+function selCal(criterio,val,btn){
+  const container=document.getElementById('cal-'+criterio);
+  container.querySelectorAll('.cal-btn').forEach((b,i)=>{ b.className='cal-btn'; if(i<val){ if(val<=3) b.classList.add('active-low'); else if(val<=6) b.classList.add('active-mid'); else b.classList.add('active-high'); } });
+  if(criterio==='tecnica') calTecnica=val;
+  if(criterio==='cobertura') calCobertura=val;
+  if(criterio==='marcado') calMarcado=val;
+  if(criterio==='equipos') calEquipos=val;
+  calcNotaTotal();
+}
+
+function calcNotaTotal(){
+  const total=counters.inf_base+counters.inf_parcial+counters.inf_sin;
+  let ptsInf=0; if(total>0) ptsInf=Math.round(counters.inf_base/total*35);
+  const totalCal=counters.cal_100+counters.cal_70+counters.cal_50+counters.cal_20;
+  const ptsCal=totalCal>0?Math.round((counters.cal_100+counters.cal_70)/totalCal*10):0;
+  const ana=document.getElementById('f-ana').value; const ptsANA=ana==='Óptima'?10:(ana==='Deficiente'||ana==='En exceso')?5:0;
+  const apertura=document.getElementById('f-apertura').value; const ptsAp=apertura==='Sí'?5:0;
+  const rendHa=document.getElementById('f-rend-ha').value; const ptsRH=rendHa.includes('Excelente')?10:rendHa.includes('Muy bueno')?7:rendHa.includes('Bueno')?4:0;
+  const ptsTec=calTecnica+calCobertura+calMarcado+calEquipos;
+  const total100=Math.min(100,Math.max(0,ptsInf+ptsCal+ptsANA+ptsAp+ptsRH+ptsTec));
+  const pctLabel=total>0?Math.round(counters.inf_base/total*100)+'% correctas':'sin datos';
+  const el=document.getElementById('nota-auto'); el.style.display='block';
+  el.className='nota-auto'+(total100>=80?'':total100>=60?' warn':' bad');
+  document.getElementById('nota-total').textContent=total100;
+  document.getElementById('nota-semaforo').textContent=total100>=80?'🟢':total100>=60?'🟡':'🔴';
+  document.getElementById('nota-breakdown').innerHTML=`Inf: ${ptsInf}/35 (${pctLabel}) · Form: ${ptsCal}/10 · ANA: ${ptsANA}/10 · Aper: ${ptsAp}/5 · Ha: ${ptsRH}/10 · Tec: ${ptsTec}/30`;
+}
+
+function calcNotaFinal(){
+  const total=counters.inf_base+counters.inf_parcial+counters.inf_sin;
+  let ptsInf=0; if(total>0) ptsInf=Math.round(counters.inf_base/total*35);
+  const totalCal=counters.cal_100+counters.cal_70+counters.cal_50+counters.cal_20;
+  const ptsCal=totalCal>0?Math.round((counters.cal_100+counters.cal_70)/totalCal*10):0;
+  const ana=document.getElementById('f-ana').value; const ptsANA=ana==='Óptima'?10:(ana==='Deficiente'||ana==='En exceso')?5:0;
+  const apertura=document.getElementById('f-apertura').value; const ptsAp=apertura==='Sí'?5:0;
+  const rendHa=document.getElementById('f-rend-ha').value; const ptsRH=rendHa.includes('Excelente')?10:rendHa.includes('Muy bueno')?7:rendHa.includes('Bueno')?4:0;
+  return Math.min(100,Math.max(0,ptsInf+ptsCal+ptsANA+ptsAp+ptsRH+calTecnica+calCobertura+calMarcado+calEquipos));
+}
+
+function toggleChip(el,tipo,otroId){
+  const val=el.dataset.val;
+  if(tipo==='def'){
+    if(selDeficiencias.includes(val)){selDeficiencias=selDeficiencias.filter(v=>v!==val);el.className='chip';}
+    else{selDeficiencias.push(val);el.className='chip sel-amber';}
+    if(otroId) document.getElementById(otroId).style.display=selDeficiencias.includes('Otro')?'block':'none';
+    document.getElementById('f-deficiencias').value=selDeficiencias.join(', ');
+  } else {
+    if(selPlagas.includes(val)){selPlagas=selPlagas.filter(v=>v!==val);el.className='chip';}
+    else{selPlagas.push(val);el.className='chip sel-red';}
+    if(otroId) document.getElementById(otroId).style.display=selPlagas.includes('Otro')?'block':'none';
+    document.getElementById('f-plagas').value=selPlagas.join(', ');
+  }
+}
+
+function selEscala(el,field,val){ document.querySelectorAll(`[data-field="${field}"]`).forEach((b,i)=>{b.className='escala-btn'; if(b===el) b.classList.add('sel-'+(i+1));}); document.getElementById('f-'+field).value=val; }
+
+function agregarPolinizador(){
+  const nombre=document.getElementById('p-polinizador').value;
+  if(!nombre){showError('Ingresa el nombre del polinizador');return;}
+  const nota=calcNotaFinal();
+  const total=counters.inf_base+counters.inf_parcial+counters.inf_sin;
+  const pctC=total>0?Math.round(counters.inf_base/total*100):0;
+  polinizadores.push({lote:document.getElementById('p-lote').value,nombre,inf_base:counters.inf_base,inf_parcial:counters.inf_parcial,inf_sin:counters.inf_sin,ana:document.getElementById('f-ana').value,apertura:document.getElementById('f-apertura').value,rendHa:document.getElementById('f-rend-ha').value,cal_tecnica:calTecnica,cal_cobertura:calCobertura,cal_marcado:calMarcado,cal_equipos:calEquipos,nota,pctC});
+  renderPolinLista();
+  document.getElementById('p-polinizador').value=''; document.getElementById('p-lote').value='';
+  counters.inf_base=0; counters.inf_parcial=0; counters.inf_sin=0;
+  ['cv-inf_base','cv-inf_parcial','cv-inf_sin'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=0;});
+  calTecnica=0; calCobertura=0; calMarcado=0; calEquipos=0;
+  document.querySelectorAll('.cal-btn').forEach(b=>b.className='cal-btn');
+  document.querySelectorAll('[data-ana],[data-ap],[data-rha]').forEach(b=>{b.className='escala-btn';if(b.dataset.rha){b.style.flex='1';b.style.minWidth='90px';}});
+  document.getElementById('f-ana').value=''; document.getElementById('f-apertura').value=''; document.getElementById('f-rend-ha').value='';
+  document.getElementById('polin-resumen').style.display='none'; document.getElementById('nota-auto').style.display='none';
+  document.getElementById('msg-error').style.display='none';
+  window.scrollTo({top:document.getElementById('paso-2').offsetTop-80,behavior:'smooth'});
+}
+
+function renderPolinLista(){
+  const lista=document.getElementById('polin-lista'),items=document.getElementById('polin-lista-items');
+  if(!polinizadores.length){lista.style.display='none';return;}
+  lista.style.display='block';
+  items.innerHTML=polinizadores.map((p,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:6px"><div><div style="font-size:13px;font-weight:600">${p.nombre}</div><div style="font-family:var(--mono);font-size:10px;color:var(--muted2);margin-top:2px">${p.lote||'Sin lote'} · ${p.pctC}% correctas</div></div><div style="display:flex;align-items:center;gap:10px"><div style="font-family:var(--mono);font-size:16px;font-weight:500;color:${p.nota>=80?'var(--accent)':p.nota>=60?'var(--amber)':'var(--red)'}">${p.nota}/100</div><button onclick="removePolinizador(${i})" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer">×</button></div></div>`).join('');
+}
+function removePolinizador(i){polinizadores.splice(i,1);renderPolinLista();}
+
+function generarResumen(){
+  const finca=document.getElementById('f-finca').value,fecha=document.getElementById('f-fecha').value,lote=document.getElementById('f-lote').value,by=document.getElementById('f-by').value;
+  const promPeso=pesos.length>0?(pesos.reduce((a,b)=>a+b,0)/pesos.length).toFixed(2)+' kg':'—';
+  const defOtro=document.getElementById('otro-def').value,plagaOtro=document.getElementById('otro-plaga').value;
+  const defDisplay=[...selDeficiencias.filter(v=>v!=='Otro'),(defOtro||'')].filter(Boolean).join(', ')||'—';
+  const plagaDisplay=[...selPlagas.filter(v=>v!=='Otro'),(plagaOtro||'')].filter(Boolean).join(', ')||'—';
+  document.getElementById('resumen-contenido').innerHTML=`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Ronda de campo</div>
+      <div class="confirm-row"><span class="confirm-row-lbl">Finca</span><span class="confirm-row-val">${finca}</span></div>
+      ${lote?`<div class="confirm-row"><span class="confirm-row-lbl">Lote novedad</span><span class="confirm-row-val">${lote}</span></div>`:''}
+      <div class="confirm-row"><span class="confirm-row-lbl">Fecha</span><span class="confirm-row-val">${fecha}</span></div>
+      <div class="confirm-row"><span class="confirm-row-lbl">Registrado por</span><span class="confirm-row-val">${by}</span></div>
+      <div class="confirm-row"><span class="confirm-row-lbl">Peso prom. racimo</span><span class="confirm-row-val">${promPeso}</span></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Polinizadores (${polinizadores.length})</div>
+      ${polinizadores.map(p=>`<div class="confirm-row"><span class="confirm-row-lbl">${p.nombre}${p.lote?' · '+p.lote:''}</span><span class="confirm-row-val" style="color:${p.nota>=80?'var(--accent)':p.nota>=60?'var(--amber)':'var(--red)'}">${p.nota}/100</span></div>`).join('')}
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Sanidad y gestión</div>
+      <div class="confirm-row"><span class="confirm-row-lbl">Defic. nutricional</span><span class="confirm-row-val">${document.getElementById('f-deficiencia-pct').value||'—'}</span></div>
+      <div class="confirm-row"><span class="confirm-row-lbl">Tipo deficiencia</span><span class="confirm-row-val">${defDisplay}</span></div>
+      <div class="confirm-row"><span class="confirm-row-lbl">Plagas</span><span class="confirm-row-val">${plagaDisplay}</span></div>
+      <div class="confirm-row"><span class="confirm-row-lbl">Maleza</span><span class="confirm-row-val">${document.getElementById('f-maleza').value||'—'}%</span></div>
+      <div class="confirm-row"><span class="confirm-row-lbl">Poda</span><span class="confirm-row-val">${document.getElementById('f-poda').value||'—'}</span></div>
+    </div>`;
+}
+
+async function enviar(){
+  const btn=document.getElementById('btn-enviar');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Guardando...';
+  const nombreActivo=document.getElementById('p-polinizador').value;
+  if(nombreActivo){
+    const notaA=calcNotaFinal(),totalA=counters.inf_base+counters.inf_parcial+counters.inf_sin;
+    polinizadores.push({lote:document.getElementById('p-lote').value,nombre:nombreActivo,inf_base:counters.inf_base,inf_parcial:counters.inf_parcial,inf_sin:counters.inf_sin,ana:document.getElementById('f-ana').value,apertura:document.getElementById('f-apertura').value,rendHa:document.getElementById('f-rend-ha').value,cal_tecnica:calTecnica,cal_cobertura:calCobertura,cal_marcado:calMarcado,cal_equipos:calEquipos,nota:notaA,pctC:totalA>0?Math.round(counters.inf_base/totalA*100):0});
+  }
+  if(!polinizadores.length){showError('Agrega al menos un polinizador');btn.disabled=false;btn.innerHTML='Guardar en Sheets';return;}
+  const defOtro=document.getElementById('otro-def').value,plagaOtro=document.getElementById('otro-plaga').value;
+  const defFinal=[...selDeficiencias.filter(v=>v!=='Otro'),(defOtro||'')].filter(Boolean).join(', ');
+  const plagaFinal=[...selPlagas.filter(v=>v!=='Otro'),(plagaOtro||'')].filter(Boolean).join(', ');
+  const base={fecha:document.getElementById('f-fecha').value,finca:document.getElementById('f-finca').value,lote_novedad:document.getElementById('f-lote').value,by:document.getElementById('f-by').value,pesos_racimos:pesos.join(','),formados_100:counters.cal_100,formados_70:counters.cal_70,formados_50:counters.cal_50,formados_20:counters.cal_20,verdes:counters.verdes,pintones:counters.pintones,sobremaduros:counters.sobremaduros,frutos_sueltos:counters.frutos_sueltos,fruta_sin_cortar:counters.fruta_sin_cortar||0,deficiencia_nutricional:document.getElementById('f-deficiencia-pct').value,tipo_deficiencia:defFinal,plagas_enfermedades:plagaFinal,cobertura_maleza:document.getElementById('f-maleza').value,estado_poda:document.getElementById('f-poda').value,obs:document.getElementById('f-obs').value};
+  try{
+    for(const pol of polinizadores){
+      const payload={...base,lote_polin:pol.lote,polinizador:pol.nombre,inf_base:pol.inf_base,inf_parcial:pol.inf_parcial,inf_sin:pol.inf_sin,ana:pol.ana,apertura:pol.apertura,rend_ha:pol.rendHa,cal_tecnica:pol.cal_tecnica,cal_cobertura:pol.cal_cobertura,cal_marcado:pol.cal_marcado,cal_equipos:pol.cal_equipos,nota_final:pol.nota};
+      const res=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify(payload)});
+      const json=await res.json();
+      if(!json.ok) throw new Error(json.error);
+    }
+    document.getElementById('paso-4').style.display='none';
+    document.getElementById('paso-5').style.display='block';
+    document.getElementById('progress-label').textContent='✓ Registro completado';
+    document.querySelectorAll('.step-dot').forEach(d=>d.className='step-dot done');
+    document.getElementById('confirm-sub').textContent=`${base.finca} · ${base.fecha} · ${polinizadores.length} polinizador${polinizadores.length>1?'es':''}`;
+    document.getElementById('confirm-details').innerHTML=polinizadores.map(p=>`<div class="confirm-row"><span class="confirm-row-lbl">${p.nombre}${p.lote?' · '+p.lote:''}</span><span class="confirm-row-val" style="color:${p.nota>=80?'var(--accent)':p.nota>=60?'var(--amber)':'var(--red)'}">${p.nota}/100 ${p.nota>=80?'🟢':p.nota>=60?'🟡':'🔴'}</span></div>`).join('');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){showError('// error: '+e.message);btn.disabled=false;btn.innerHTML='Guardar en Sheets';}
+}
+
+function showError(txt){ const el=document.getElementById('msg-error'); el.textContent=txt; el.style.display='block'; el.scrollIntoView({behavior:'smooth',block:'center'}); }
+
+function resetForm(){
+  counters={verdes:0,pintones:0,sobremaduros:0,frutos_sueltos:0,fruta_sin_cortar:0,inf_base:0,inf_parcial:0,inf_sin:0,deficiencia:0,cal_100:0,cal_70:0,cal_50:0,cal_20:0};
+  pesos=[]; selDeficiencias=[]; selPlagas=[]; polinizadores=[];
+  calTecnica=0; calCobertura=0; calMarcado=0; calEquipos=0;
+  Object.keys(counters).forEach(k=>{const el=document.getElementById('cv-'+k);if(el)el.textContent=0;});
+  renderPesos();
+  document.querySelectorAll('.chip').forEach(c=>c.className='chip');
+  document.querySelectorAll('.escala-btn').forEach(b=>b.className='escala-btn');
+  document.querySelectorAll('.cal-btn').forEach(b=>b.className='cal-btn');
+  ['f-finca','f-lote','f-maleza','f-poda','f-deficiencias','f-plagas','f-obs','f-by','p-lote','p-polinizador','f-deficiencia-pct','f-plagas-pct','f-ana','f-apertura','f-rend-ha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('f-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('f-lote').innerHTML='<option value="">Sin novedad específica</option>';
+  document.getElementById('p-lote').innerHTML='<option value="">— seleccionar lote —</option>';
+  ['polin-resumen','nota-auto','polin-lista','otro-def','otro-plaga'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
+  document.querySelectorAll('[data-defpct],[data-plagapct]').forEach(b=>b.className='escala-btn');
+  document.getElementById('polin-lista-items').innerHTML='';
+  for(let i=0;i<6;i++){const p=document.getElementById('paso-'+i);if(p)p.style.display=i===0?'block':'none';}
+  updateProgress(0);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function nuevoRegistro(){ resetForm(); }
+
+function nuevoPolinizador(){
+  counters.inf_base=0; counters.inf_parcial=0; counters.inf_sin=0;
+  calTecnica=0; calCobertura=0; calMarcado=0; calEquipos=0;
+  ['cv-inf_base','cv-inf_parcial','cv-inf_sin'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=0;});
+  document.getElementById('p-polinizador').value=''; document.getElementById('p-lote').value='';
+  document.querySelectorAll('.cal-btn').forEach(b=>b.className='cal-btn');
+  document.querySelectorAll('[data-ana],[data-ap],[data-rha]').forEach(b=>{b.className='escala-btn';if(b.dataset.rha){b.style.flex='1';b.style.minWidth='90px';}});
+  document.getElementById('f-ana').value=''; document.getElementById('f-apertura').value=''; document.getElementById('f-rend-ha').value='';
+  document.getElementById('polin-resumen').style.display='none'; document.getElementById('nota-auto').style.display='none';
+  for(let i=0;i<6;i++){const p=document.getElementById('paso-'+i);if(p)p.style.display=i===2?'block':'none';}
+  const sh=document.querySelector('#paso-2 .sec-sub-form');
+  if(sh) sh.textContent=document.getElementById('f-finca').value+' · '+document.getElementById('f-fecha').value;
+  updateProgress(2);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Cargar dashboard al iniciar
+cargarDatos();
+</script>
+</body>
+</html>
