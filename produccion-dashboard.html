@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<title>Pantanal · Producción</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0c0c;--surface:#141414;--surface2:#1c1c1c;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.15);
+  --text:#f0ede8;--muted:rgba(240,237,232,.4);--muted2:rgba(240,237,232,.65);
+  --accent:#b8f04a;--amber:#f0a830;--red:#f05050;
+  --mono:'DM Mono',monospace;--display:'Syne',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--display)}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:20}
+.topbar-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:blink 2.5s ease-in-out infinite;margin-right:10px;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.topbar-name{font-size:13px;font-weight:700}
+.topbar-sub{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.06em}
+.topbar-date{font-family:var(--mono);font-size:11px;color:var(--muted2)}
+
+.main-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg)}
+.main-tab{flex:1;padding:13px 6px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer}
+.main-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+.content{padding:16px}
+.loading{text-align:center;padding:60px 20px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.spinner-w{display:inline-block;width:14px;height:14px;border:2px solid rgba(240,237,232,.15);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.btn-refresh{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted2);padding:5px 10px;font-family:var(--mono);font-size:10px;cursor:pointer}
+
+.slabel{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;margin-top:18px;display:flex;align-items:center;gap:8px}
+.slabel::after{content:'';flex:1;height:1px;background:var(--border)}
+.slabel:first-child{margin-top:0}
+
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+.kpi-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.kpi-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.kpi-val{font-family:var(--mono);font-size:19px;font-weight:500;line-height:1}
+.kpi-sub{font-family:var(--mono);font-size:9px;color:var(--muted2);margin-top:3px}
+
+.finca-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.finca-row:last-child{border-bottom:none}
+.finca-name{font-size:13px;font-weight:600;flex:1}
+.finca-meta{font-family:var(--mono);font-size:10px;color:var(--muted2);margin-top:2px}
+.bar-wrap{height:2px;background:rgba(255,255,255,.06);border-radius:1px;overflow:hidden;margin-top:5px}
+.bar-fill{height:100%;border-radius:1px}
+
+.mes-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px}
+.mes-table th{padding:6px 8px;text-align:left;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);font-weight:400}
+.mes-table td{padding:8px;border-bottom:1px solid var(--border)}
+.mes-table tr:last-child td{border-bottom:none}
+.mes-table .finca-col{font-weight:600;font-size:12px;color:var(--text)}
+.mes-table .val-cell{text-align:right;color:var(--muted2)}
+.mes-table .total-row td{color:var(--accent);font-weight:500;border-top:1px solid var(--border2)}
+
+.lote-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.lote-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.lote-name{font-size:13px;font-weight:600}
+.lote-estado{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px}
+.lote-stats{display:flex;gap:16px}
+.lote-stat{font-family:var(--mono);font-size:11px;color:var(--muted2)}
+.lote-stat span{color:var(--text);font-weight:500}
+
+.trend-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px}
+.trend-table th{padding:5px 6px;text-align:center;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)}
+.trend-table td{padding:6px;border-bottom:1px solid var(--border);text-align:center}
+.trend-table .ind-col{text-align:left;color:var(--muted2);font-size:10px}
+.trend-table tr:last-child td{border-bottom:none}
+
+.section{margin-bottom:24px}
+.empty{text-align:center;padding:32px 0;font-family:var(--mono);font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center">
+    <div class="topbar-dot"></div>
+    <div>
+      <div class="topbar-name">Pantanal · Producción</div>
+      <div class="topbar-sub" id="topbar-sub">2026</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="topbar-date" id="topbar-date"></div>
+    <button class="btn-refresh" onclick="cargarDatos()">↻</button>
+  </div>
+</div>
+
+<div class="main-tabs">
+  <button class="main-tab active" id="tab-btn-dashboard" onclick="goTab('dashboard')">Dashboard</button>
+  <button class="main-tab" id="tab-btn-fincas" onclick="goTab('fincas')">Por finca</button>
+  <button class="main-tab" id="tab-btn-lotes" onclick="goTab('lotes')">Por lote</button>
+  <button class="main-tab" id="tab-btn-tendencia" onclick="goTab('tendencia')">Tendencia</button>
+</div>
+
+<div id="tab-dashboard" class="content">
+  <div id="loading-dash" class="loading"><span class="spinner-w"></span>Cargando datos...</div>
+  <div id="dash-content" style="display:none"></div>
+</div>
+
+<div id="tab-fincas" class="content" style="display:none">
+  <div id="fincas-content"><div class="empty">Toca ↻ para cargar</div></div>
+</div>
+
+<div id="tab-lotes" class="content" style="display:none">
+  <div id="lotes-content"><div class="empty">Toca ↻ para cargar</div></div>
+</div>
+
+<div id="tab-tendencia" class="content" style="display:none">
+  <div id="tendencia-content"><div class="empty">Toca ↻ para cargar</div></div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIUbNyVqBWES86pS-udhU3urpY3c4FrA4kH-EP4DdsKAdg29vMK4e0A-v-cDSzNsXz/exec';
+const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const FINCAS_ORDER = ['Los Corrales','Chipo','Castañeda','Andino','Marujita'];
+
+let datos = null;
+
+document.getElementById('topbar-date').textContent =
+  new Date().toLocaleDateString('es-EC',{weekday:'short',day:'numeric',month:'short'}).toUpperCase();
+
+function goTab(t) {
+  ['dashboard','fincas','lotes','tendencia'].forEach(function(name) {
+    document.getElementById('tab-' + name).style.display = name === t ? 'block' : 'none';
+    document.getElementById('tab-btn-' + name).classList.toggle('active', name === t);
+  });
+}
+
+function cargarDatos() {
+  document.getElementById('loading-dash').style.display = 'block';
+  document.getElementById('dash-content').style.display = 'none';
+
+  const cb = '_cbProd_' + Date.now();
+  window[cb] = function(json) {
+    delete window[cb];
+    const s = document.getElementById('jsonp-prod');
+    if (s) s.remove();
+    if (json.ok) {
+      datos = json;
+      renderDashboard();
+      renderFincas();
+      renderLotes();
+      renderTendencia();
+    } else {
+      document.getElementById('loading-dash').innerHTML = '<span style="color:var(--red)">// error al cargar datos</span>';
+    }
+  };
+  const script = document.createElement('script');
+  script.id = 'jsonp-prod';
+  script.src = SCRIPT_URL + '?callback=' + cb;
+  script.onerror = function() {
+    document.getElementById('loading-dash').innerHTML = '<span style="color:var(--red)">// sin conexión</span>';
+  };
+  document.head.appendChild(script);
+}
+
+function color3(v, g, m) {
+  return v >= g ? 'var(--accent)' : v >= m ? 'var(--amber)' : 'var(--red)';
+}
+
+// ── DASHBOARD ──────────────────────────────────────
+function renderDashboard() {
+  const d = datos;
+  const kpis = d.kpis || {};
+  const fincas = d.fincas || [];
+  const totalKg = Number(kpis.totalKg) || 0;
+  const totalRacimos = Number(kpis.totalRacimos) || 0;
+  const kgRacimo = parseFloat(kpis.kgRacimo) || 0;
+  const meta = Number(kpis.meta) || 0;
+  const avancePct = meta > 0 ? Math.round(totalKg / meta * 100) : 0;
+
+  let html = '';
+
+  // KPIs principales
+  html += '<div class="kpi-grid">';
+  html += '<div class="kpi-card"><div class="kpi-lbl">Total Kg año</div><div class="kpi-val">' + totalKg.toLocaleString() + '</div><div class="kpi-sub">acumulado 2026</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-lbl">Total Racimos</div><div class="kpi-val">' + totalRacimos.toLocaleString() + '</div><div class="kpi-sub">acumulado 2026</div></div>';
+  html += '</div>';
+  html += '<div class="kpi-grid" style="margin-top:8px">';
+  const kgRColor = color3(kgRacimo, 12, 8);
+  html += '<div class="kpi-card"><div class="kpi-lbl">Kg / Racimo</div><div class="kpi-val" style="color:' + kgRColor + '">' + kgRacimo.toFixed(2) + '</div><div class="kpi-sub">promedio general</div></div>';
+  const avColor = color3(avancePct, 80, 50);
+  html += '<div class="kpi-card"><div class="kpi-lbl">Avance vs Meta</div><div class="kpi-val" style="color:' + avColor + '">' + avancePct + '<span style="font-size:12px;color:var(--muted)">%</span></div><div class="kpi-sub">' + totalKg.toLocaleString() + ' / ' + meta.toLocaleString() + ' kg</div></div>';
+  html += '</div>';
+
+  // Barra de progreso meta
+  html += '<div style="margin:12px 0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px">';
+  html += '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:8px"><span>Progreso meta anual</span><span style="color:' + avColor + '">' + avancePct + '%</span></div>';
+  html += '<div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden"><div style="width:' + Math.min(avancePct,100) + '%;height:100%;background:' + avColor + ';border-radius:3px;transition:width .5s"></div></div>';
+  html += '<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px">Meta: ' + meta.toLocaleString() + ' kg · Faltan: ' + Math.max(0, meta - totalKg).toLocaleString() + ' kg</div>';
+  html += '</div>';
+
+  // KPIs destacados
+  html += '<div class="slabel">Destacados</div>';
+  html += '<div class="kpi-grid-3">';
+  html += '<div class="kpi-card"><div class="kpi-lbl">Mejor mes</div><div class="kpi-val" style="font-size:15px">' + (kpis.mejorMes || '—') + '</div><div class="kpi-sub">' + (kpis.kgMejorMes ? Number(kpis.kgMejorMes).toLocaleString() + ' kg' : '') + '</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-lbl">Finca líder</div><div class="kpi-val" style="font-size:13px">' + (kpis.fincaLider || '—') + '</div><div class="kpi-sub">mayor producción</div></div>';
+  html += '<div class="kpi-card"><div class="kpi-lbl">Mejor kg/rac</div><div class="kpi-val" style="font-size:13px">' + (kpis.mejorKgRacFinca || '—') + '</div><div class="kpi-sub">por finca</div></div>';
+  html += '</div>';
+
+  // Kg por finca
+  html += '<div class="slabel">Kg por finca</div>';
+  const maxKg = Math.max(...fincas.map(function(f) { return f.totalKg || 0; }), 1);
+  fincas.forEach(function(f) {
+    const pct = Math.round((f.totalKg || 0) / maxKg * 100);
+    const kgR = parseFloat(f.kgRacimo) || 0;
+    const col = kgR > 0 ? color3(kgR, 12, 8) : 'var(--muted)';
+    html += '<div class="finca-row"><div style="flex:1"><div class="finca-name">' + f.finca + '</div>';
+    html += '<div style="font-family:var(--mono);font-size:10px;color:var(--muted2);margin-top:2px">' + (f.totalKg || 0).toLocaleString() + ' kg' + (kgR > 0 ? ' · <span style="color:' + col + '">' + kgR.toFixed(1) + ' kg/rac</span>' : '') + '</div>';
+    html += '<div class="bar-wrap"><div class="bar-fill" style="width:' + pct + '%;background:var(--accent)"></div></div></div></div>';
+  });
+
+  document.getElementById('loading-dash').style.display = 'none';
+  document.getElementById('dash-content').style.display = 'block';
+  document.getElementById('dash-content').innerHTML = html;
+}
+
+// ── POR FINCA ──────────────────────────────────────
+function renderFincas() {
+  const mesesData = datos.meses || [];
+  const fincas = datos.fincas || [];
+  let html = '';
+
+  // Tabla mensual
+  html += '<div class="section">';
+  html += '<div style="overflow-x:auto"><table class="mes-table">';
+  html += '<thead><tr><th>Finca</th>';
+  MESES.forEach(function(m) { html += '<th style="text-align:right">' + m + '</th>'; });
+  html += '<th style="text-align:right">Total</th></tr></thead><tbody>';
+
+  fincas.forEach(function(f) {
+    html += '<tr><td class="finca-col">' + f.finca + '</td>';
+    (f.meses || []).forEach(function(v) {
+      html += '<td class="val-cell">' + (v > 0 ? (v/1000).toFixed(1) + 't' : '—') + '</td>';
+    });
+    html += '<td class="val-cell" style="color:var(--accent)">' + ((f.totalKg||0)/1000).toFixed(1) + 't</td></tr>';
+  });
+
+  // Total general
+  const totalesMes = Array(12).fill(0);
+  fincas.forEach(function(f) {
+    (f.meses || []).forEach(function(v, i) { totalesMes[i] += v || 0; });
+  });
+  const totalGeneral = totalesMes.reduce(function(s,v) { return s+v; }, 0);
+  html += '<tr class="total-row"><td>TOTAL</td>';
+  totalesMes.forEach(function(v) { html += '<td style="text-align:right">' + (v > 0 ? (v/1000).toFixed(1) + 't' : '—') + '</td>'; });
+  html += '<td style="text-align:right">' + (totalGeneral/1000).toFixed(1) + 't</td></tr>';
+  html += '</tbody></table></div></div>';
+
+  // KG/Racimo por finca
+  html += '<div class="slabel">Kg/Racimo por finca</div>';
+  fincas.forEach(function(f) {
+    const kgR = parseFloat(f.kgRacimo) || 0;
+    const col = kgR > 0 ? color3(kgR, 12, 8) : 'var(--muted)';
+    const sem = kgR >= 12 ? '🟢' : kgR >= 8 ? '🟡' : kgR > 0 ? '🔴' : '—';
+    html += '<div class="finca-row"><div class="finca-name">' + f.finca + '</div>';
+    html += '<div style="font-family:var(--mono);font-size:16px;font-weight:500;color:' + col + ';margin-left:12px">' + (kgR > 0 ? kgR.toFixed(2) + ' kg/rac ' + sem : '—') + '</div></div>';
+  });
+
+  document.getElementById('fincas-content').innerHTML = html;
+}
+
+// ── POR LOTE ──────────────────────────────────────
+function renderLotes() {
+  const lotes = datos.lotes || [];
+  if (!lotes.length) {
+    document.getElementById('lotes-content').innerHTML = '<div class="empty">Sin datos de lotes</div>';
+    return;
+  }
+
+  let html = '';
+  let fincaActual = '';
+
+  lotes.forEach(function(l) {
+    if (l.finca !== fincaActual) {
+      fincaActual = l.finca;
+      html += '<div class="slabel">' + fincaActual + '</div>';
+    }
+
+    const kgR = parseFloat(l.kgRacimo) || 0;
+    const col = kgR > 0 ? color3(kgR, 12, 8) : 'var(--muted)';
+    const bgEst = l.estado === '✅ Normal' ? 'rgba(184,240,74,.08)' : l.estado === '🔴 Bajo' ? 'rgba(240,80,80,.08)' : 'var(--surface2)';
+    const colEst = l.estado === '✅ Normal' ? 'var(--accent)' : l.estado === '🔴 Bajo' ? 'var(--red)' : 'var(--muted)';
+
+    html += '<div class="lote-item"><div class="lote-header">';
+    html += '<div class="lote-name">' + l.lote + '</div>';
+    html += '<div class="lote-estado" style="background:' + bgEst + ';color:' + colEst + ';border:1px solid ' + colEst + '30">' + (l.estado || '—') + '</div>';
+    html += '</div><div class="lote-stats">';
+    html += '<div class="lote-stat">Kg: <span>' + (l.kg || 0).toLocaleString() + '</span></div>';
+    html += '<div class="lote-stat">Rac: <span>' + (l.racimos || 0).toLocaleString() + '</span></div>';
+    html += '<div class="lote-stat">Kg/rac: <span style="color:' + col + '">' + (kgR > 0 ? kgR.toFixed(1) : '—') + '</span></div>';
+    html += '</div></div>';
+  });
+
+  document.getElementById('lotes-content').innerHTML = html;
+}
+
+// ── TENDENCIA SEMANAL ──────────────────────────────
+function renderTendencia() {
+  const semanas = datos.semanas || [];
+  if (!semanas.length) {
+    document.getElementById('tendencia-content').innerHTML = '<div class="empty">Sin datos de tendencia semanal</div>';
+    return;
+  }
+
+  const ultimas = semanas.slice(-8);
+  let html = '<div style="overflow-x:auto"><table class="trend-table">';
+  html += '<thead><tr><th style="text-align:left;min-width:80px">Semana</th>';
+  ultimas.forEach(function(s) { html += '<th>Sem ' + s.semana + '</th>'; });
+  html += '<th>Tend.</th></tr></thead><tbody>';
+
+  // Kg total
+  html += '<tr><td class="ind-col">Kg total</td>';
+  ultimas.forEach(function(s) {
+    const v = s.kg || 0;
+    html += '<td style="color:' + (v > 0 ? 'var(--text)' : 'var(--muted)') + '">' + (v > 0 ? (v/1000).toFixed(1) + 't' : '—') + '</td>';
+  });
+  const lastKg = ultimas[ultimas.length-1]?.kg || 0;
+  const prevKg = ultimas[ultimas.length-2]?.kg || 0;
+  const tendKg = lastKg > prevKg * 1.05 ? '↑' : lastKg < prevKg * 0.95 ? '↓' : '→';
+  html += '<td style="color:' + (tendKg==='↑'?'var(--accent)':tendKg==='↓'?'var(--red)':'var(--amber)') + ';font-size:16px">' + tendKg + '</td></tr>';
+
+  // Racimos
+  html += '<tr><td class="ind-col">Racimos</td>';
+  ultimas.forEach(function(s) {
+    const v = s.racimos || 0;
+    html += '<td style="color:' + (v > 0 ? 'var(--text)' : 'var(--muted)') + '">' + (v > 0 ? v.toLocaleString() : '—') + '</td>';
+  });
+  const lastRac = ultimas[ultimas.length-1]?.racimos || 0;
+  const prevRac = ultimas[ultimas.length-2]?.racimos || 0;
+  const tendRac = lastRac > prevRac * 1.05 ? '↑' : lastRac < prevRac * 0.95 ? '↓' : '→';
+  html += '<td style="color:' + (tendRac==='↑'?'var(--accent)':tendRac==='↓'?'var(--red)':'var(--amber)') + ';font-size:16px">' + tendRac + '</td></tr>';
+
+  // Kg/Racimo
+  html += '<tr><td class="ind-col">Kg/Racimo</td>';
+  ultimas.forEach(function(s) {
+    const v = parseFloat(s.kgRacimo) || 0;
+    const col = v > 0 ? color3(v, 12, 8) : 'var(--muted)';
+    html += '<td style="color:' + col + '">' + (v > 0 ? v.toFixed(1) : '—') + '</td>';
+  });
+  const lastKgR = parseFloat(ultimas[ultimas.length-1]?.kgRacimo) || 0;
+  const prevKgR = parseFloat(ultimas[ultimas.length-2]?.kgRacimo) || 0;
+  const tendKgR = lastKgR > prevKgR * 1.05 ? '↑' : lastKgR < prevKgR * 0.95 ? '↓' : '→';
+  html += '<td style="color:' + (tendKgR==='↑'?'var(--accent)':tendKgR==='↓'?'var(--red)':'var(--amber)') + ';font-size:16px">' + tendKgR + '</td></tr>';
+
+  html += '</tbody></table></div>';
+
+  // Sparklines por finca
+  html += '<div class="slabel" style="margin-top:20px">Kg semanal por finca</div>';
+  const fincasEnSemanas = [...new Set(semanas.flatMap(function(s) { return Object.keys(s.fincas || {}); }))];
+  fincasEnSemanas.forEach(function(finca) {
+    const vals = ultimas.map(function(s) { return (s.fincas || {})[finca] || 0; });
+    const maxV = Math.max(...vals, 1);
+    const ultimo = vals[vals.length-1];
+    const penultimo = vals[vals.length-2] || 0;
+    const tend = ultimo > penultimo * 1.05 ? '↑' : ultimo < penultimo * 0.95 ? '↓' : '→';
+    const tColor = tend==='↑'?'var(--accent)':tend==='↓'?'var(--red)':'var(--amber)';
+    html += '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><div style="font-size:13px;font-weight:600">' + finca + '</div><div style="font-family:var(--mono);font-size:14px;color:' + tColor + '">' + tend + ' ' + (ultimo > 0 ? (ultimo/1000).toFixed(1)+'t' : '—') + '</div></div>';
+    html += '<div style="display:flex;align-items:flex-end;gap:3px;height:32px">';
+    vals.forEach(function(v) {
+      const h = maxV > 0 ? Math.round(v/maxV*28) : 0;
+      const col = v > 0 ? 'var(--accent)' : 'var(--surface2)';
+      html += '<div style="flex:1;height:' + Math.max(h,2) + 'px;background:' + col + ';border-radius:2px;opacity:' + (v>0?'0.7':'0.3') + '"></div>';
+    });
+    html += '</div></div>';
+  });
+
+  document.getElementById('tendencia-content').innerHTML = html;
+}
+
+// Cargar al iniciar
+cargarDatos();
+</script>
+</body>
+</html>
