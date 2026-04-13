@@ -965,7 +965,7 @@ function resetForm(){
   document.querySelectorAll('.chip').forEach(c=>c.className='chip');
   document.querySelectorAll('.escala-btn').forEach(b=>b.className='escala-btn');
   document.querySelectorAll('.cal-btn').forEach(b=>b.className='cal-btn');
-  ['f-finca','f-lote','f-maleza','f-poda','f-deficiencias','f-plagas','f-obs','f-by','p-lote','p-polinizador','f-deficiencia-pct','f-plagas-pct','f-ana','f-apertura','f-rend-ha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f-finca','f-lote','f-maleza','f-poda','f-deficiencias','f-plagas','f-obs','f-by','p-lote','p-polinizador','f-deficiencia-pct','f-plagas-pct','f-ana','f-apertura'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const _hoy=new Date().toISOString().split('T')[0]; document.getElementById('f-fecha').value=_hoy; document.getElementById('f-fecha').max=_hoy;
   document.getElementById('f-lote').innerHTML='<option value="">Sin novedad específica</option>';
   document.getElementById('p-lote').innerHTML='<option value="">— seleccionar lote —</option>';
