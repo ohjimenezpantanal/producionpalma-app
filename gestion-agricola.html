@@ -468,7 +468,7 @@ let calTecnica=0,calCobertura=0,calMarcado=0,calEquipos=0;
 // INIT
 const hoyStr=new Date().toLocaleDateString('es-EC',{weekday:'short',day:'numeric',month:'short'}).toUpperCase();
 document.getElementById('topbar-date').textContent=hoyStr;
-document.getElementById('f-fecha').value=new Date().toISOString().split('T')[0];
+const _hoy=new Date().toISOString().split('T')[0]; document.getElementById('f-fecha').value=_hoy; document.getElementById('f-fecha').max=_hoy;
 
 // MAIN TAB SWITCH
 function goMainTab(tab){
@@ -976,7 +976,7 @@ function resetForm(){
   document.querySelectorAll('.escala-btn').forEach(b=>b.className='escala-btn');
   document.querySelectorAll('.cal-btn').forEach(b=>b.className='cal-btn');
   ['f-finca','f-lote','f-maleza','f-poda','f-deficiencias','f-plagas','f-obs','f-by','p-lote','p-polinizador','f-deficiencia-pct','f-plagas-pct','f-ana','f-apertura','f-rend-ha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('f-fecha').value=new Date().toISOString().split('T')[0];
+  const _hoy=new Date().toISOString().split('T')[0]; document.getElementById('f-fecha').value=_hoy; document.getElementById('f-fecha').max=_hoy;
   document.getElementById('f-lote').innerHTML='<option value="">Sin novedad específica</option>';
   document.getElementById('p-lote').innerHTML='<option value="">— seleccionar lote —</option>';
   ['polin-resumen','nota-auto','polin-lista','otro-def','otro-plaga'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
