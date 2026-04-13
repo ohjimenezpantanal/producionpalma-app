@@ -327,17 +327,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5)}
         </div>
         <input type="hidden" id="f-apertura">
       </div>
-      <div class="field">
-        <label>Rendimiento por hectárea <span style="color:var(--accent);font-family:var(--mono)">(10 pts)</span></label>
-        <div style="display:flex;gap:6px;flex-wrap:wrap" id="rend-ha-btns">
-          <button class="escala-btn" style="flex:1;min-width:90px" onclick="selRendHa(this,'≥5 ha — Excelente')" data-rha="≥5 ha">≥5 ha<br><span style="font-size:10px;color:var(--accent)">Excelente</span><br><span style="font-size:10px;color:var(--accent)">10 pts</span></button>
-          <button class="escala-btn" style="flex:1;min-width:90px" onclick="selRendHa(this,'4 ha — Muy bueno')" data-rha="4 ha">4 ha<br><span style="font-size:10px">Muy bueno</span><br><span style="font-size:10px;color:var(--accent)">7 pts</span></button>
-          <button class="escala-btn" style="flex:1;min-width:90px" onclick="selRendHa(this,'3 ha — Bueno')" data-rha="3 ha">3 ha<br><span style="font-size:10px">Bueno</span><br><span style="font-size:10px;color:var(--amber)">4 pts</span></button>
-          <button class="escala-btn" style="flex:1;min-width:90px" onclick="selRendHa(this,'<3 ha — Insuficiente')" data-rha="<3 ha">&lt;3 ha<br><span style="font-size:10px;color:var(--red)">Insuficiente</span><br><span style="font-size:10px;color:var(--red)">0 pts</span></button>
-        </div>
-        <input type="hidden" id="f-rend-ha">
-      </div>
-      <div class="slabel" style="margin-top:20px">Calificación del técnico (40 pts)</div>
+      <div class="slabel" style="margin-top:20px">Calificación del técnico (40 pts) — evaluación completa</div>
       <div class="cal-row"><div class="cal-criterio">Técnica de aplicación</div><div class="cal-desc">Técnica de aplicación: calificación del 1 al 10</div><div class="cal-btns" id="cal-tecnica"><button class="cal-btn" onclick="selCal('tecnica',1,this)">1</button><button class="cal-btn" onclick="selCal('tecnica',2,this)">2</button><button class="cal-btn" onclick="selCal('tecnica',3,this)">3</button><button class="cal-btn" onclick="selCal('tecnica',4,this)">4</button><button class="cal-btn" onclick="selCal('tecnica',5,this)">5</button><button class="cal-btn" onclick="selCal('tecnica',6,this)">6</button><button class="cal-btn" onclick="selCal('tecnica',7,this)">7</button><button class="cal-btn" onclick="selCal('tecnica',8,this)">8</button><button class="cal-btn" onclick="selCal('tecnica',9,this)">9</button><button class="cal-btn" onclick="selCal('tecnica',10,this)">10</button></div></div>
       <div class="cal-row"><div class="cal-criterio">Cobertura del lote</div><div class="cal-desc">¿Visitó todas las palmas del lote sin omitir?</div><div class="cal-btns" id="cal-cobertura"><button class="cal-btn" onclick="selCal('cobertura',1,this)">1</button><button class="cal-btn" onclick="selCal('cobertura',2,this)">2</button><button class="cal-btn" onclick="selCal('cobertura',3,this)">3</button><button class="cal-btn" onclick="selCal('cobertura',4,this)">4</button><button class="cal-btn" onclick="selCal('cobertura',5,this)">5</button><button class="cal-btn" onclick="selCal('cobertura',6,this)">6</button><button class="cal-btn" onclick="selCal('cobertura',7,this)">7</button><button class="cal-btn" onclick="selCal('cobertura',8,this)">8</button><button class="cal-btn" onclick="selCal('cobertura',9,this)">9</button><button class="cal-btn" onclick="selCal('cobertura',10,this)">10</button></div></div>
       <div class="cal-row"><div class="cal-criterio">Marcado de hoja polinizada</div><div class="cal-desc">¿Marca correctamente cada flor tratada? (5 pts máx)</div><div class="cal-btns" id="cal-marcado"><button class="cal-btn" onclick="selCal('marcado',1,this)">1</button><button class="cal-btn" onclick="selCal('marcado',2,this)">2</button><button class="cal-btn" onclick="selCal('marcado',3,this)">3</button><button class="cal-btn" onclick="selCal('marcado',4,this)">4</button><button class="cal-btn" onclick="selCal('marcado',5,this)">5</button><button class="cal-btn" onclick="selCal('marcado',6,this)">6</button><button class="cal-btn" onclick="selCal('marcado',7,this)">7</button><button class="cal-btn" onclick="selCal('marcado',8,this)">8</button><button class="cal-btn" onclick="selCal('marcado',9,this)">9</button><button class="cal-btn" onclick="selCal('marcado',10,this)">10</button></div></div>
@@ -846,7 +836,7 @@ function calcNotaTotal(){
   el.className='nota-auto'+(total100>=80?'':total100>=60?' warn':' bad');
   document.getElementById('nota-total').textContent=total100;
   document.getElementById('nota-semaforo').textContent=total100>=80?'🟢':total100>=60?'🟡':'🔴';
-  document.getElementById('nota-breakdown').innerHTML=`Inf: ${ptsInf}/35 (${pctLabel}) · Form: ${ptsCal}/10 · ANA: ${ptsANA}/10 · Aper: ${ptsAp}/5 · Ha: ${ptsRH}/10 · Tec: ${ptsTec}/30`;
+  document.getElementById('nota-breakdown').innerHTML=`Inf: ${ptsInf}/35 (${pctLabel}) · Form: ${ptsCal}/10 · ANA: ${ptsANA}/10 · Aper: ${ptsAp}/5 · Tec: ${ptsTec}/40`;
 }
 
 function calcNotaFinal(){
