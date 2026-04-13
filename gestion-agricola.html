@@ -295,7 +295,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5)}
       <div class="sec-header-form"><div class="sec-icon-form">03 / Polinización</div><div class="sec-title-form">Calificación del polinizador</div><div class="sec-sub-form">Lote, conteo e inflorescencias</div></div>
       <div class="slabel">Identificación</div>
       <div class="field"><label>Lote evaluado <span class="req">*</span></label><select id="p-lote"><option value="">— seleccionar lote —</option></select></div>
-      <div class="field"><label>Nombre del polinizador <span class="req">*</span></label><input type="text" id="p-polinizador" placeholder="Nombre completo..."></div>
+      <div class="field"><label>Nombre del polinizador <span class="req">*</span></label><select id="p-polinizador"><option value="">— seleccionar —</option><option>Carlos Mina</option><option>José Quintero</option><option>Luis Caicedo</option><option>Manuel Espinoza</option><option>Pedro Suárez</option><option>Roberto Angulo</option><option>Segundo Nazareno</option><option>Washington Preciado</option></select></div>
       <div class="slabel">Conteo de inflorescencias</div>
       <div>
         <div class="counter-row"><div><div class="counter-name">Cubiertas desde la base</div><div class="counter-sub" style="color:var(--accent)">Aplicación correcta</div></div><div class="counter-controls"><button class="counter-btn" onclick="cambiarCounter('inf_base',-1);calcPolinAuto()">−</button><div class="counter-val" id="cv-inf_base">0</div><button class="counter-btn" onclick="cambiarCounter('inf_base',1);calcPolinAuto()">+</button></div></div>
@@ -776,7 +776,7 @@ function nextPaso(actual){
     if(!document.getElementById('f-finca').value){showError('Selecciona una finca');return;}
     if(!document.getElementById('f-by').value){showError('Selecciona quién registra');return;}
   }
-  if(actual===3) generarResumen();
+  if(actual===1){     const tieneDato=(pesos.length>0)||(counters.cal_100+counters.cal_70+counters.cal_50+counters.cal_20)>0||(counters.verdes+counters.pintones+counters.sobremaduros+counters.frutos_sueltos+counters.fruta_sin_cortar)>0;     if(!tieneDato){showError('Registra al menos un dato de cosecha antes de continuar');return;}   }   if(actual===1){     const tieneDato=(pesos.length>0)||(counters.cal_100+counters.cal_70+counters.cal_50+counters.cal_20)>0||(counters.verdes+counters.pintones+counters.sobremaduros+counters.frutos_sueltos+counters.fruta_sin_cortar)>0;     if(!tieneDato){showError('Registra al menos un dato de cosecha antes de continuar');return;}   }   if(actual===3){     if(!selPlagas.length){showError('Indica la presencia de plagas (incluyendo "Sin presencia")');return;}     if(!document.getElementById('f-maleza').value){showError('Selecciona el % de cobertura de maleza');return;}     if(!document.getElementById('f-poda').value){showError('Selecciona el estado de poda');return;}     const hayPlaga=selPlagas.length&&!selPlagas.includes('Sin presencia');     if(hayPlaga&&!document.getElementById('f-plagas-pct').value){showError('Indica el % de palmas afectadas por plagas');return;}     generarResumen();   }
   document.getElementById('paso-'+actual).style.display='none';
   document.getElementById('paso-'+(actual+1)).style.display='block';
   updateProgress(actual+1);
