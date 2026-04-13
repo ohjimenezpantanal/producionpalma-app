@@ -170,7 +170,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5)}
 .confirm-row:last-child{border-bottom:none}
 .confirm-row-lbl{color:var(--muted)}
 .confirm-row-val{color:var(--accent);text-align:right;max-width:65%}
-.btn-nuevo{width:100%;padding:14px;background:var(--accent);color:#0c0c0c;font-family:var(--display);font-size:14px;font-weight:700;border:none;border-radius:12px;cursor:pointer;margin-top:8px}
+/* MODO OFFLINE */ .offline-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:20px;font-family:var(--mono);font-size:10px;font-weight:500;transition:all .3s} .offline-badge.online{background:rgba(184,240,74,.1);border:1px solid rgba(184,240,74,.2);color:var(--accent)} .offline-badge.offline{background:rgba(240,168,48,.1);border:1px solid rgba(240,168,48,.3);color:var(--amber)} .offline-badge.syncing{background:rgba(74,184,240,.1);border:1px solid rgba(74,184,240,.2);color:var(--blue)} .offline-dot{width:6px;height:6px;border-radius:50%;background:currentColor} .offline-dot.pulse{animation:blink 1s ease-in-out infinite} .btn-nuevo{width:100%;padding:14px;background:var(--accent);color:#0c0c0c;font-family:var(--display);font-size:14px;font-weight:700;border:none;border-radius:12px;cursor:pointer;margin-top:8px}
 </style>
 </head>
 <body>
@@ -958,7 +958,7 @@ async function enviar(){
     document.getElementById('paso-5').style.display='block';
     document.getElementById('progress-label').textContent='✓ Registro completado';
     document.querySelectorAll('.step-dot').forEach(d=>d.className='step-dot done');
-    document.getElementById('confirm-sub').textContent=`${base.finca} · ${base.fecha} · ${polinizadores.length} polinizador${polinizadores.length>1?'es':''}`;
+    document.getElementById('confirm-sub').textContent=`${base.finca} · ${base.fecha} · ${polinizadores.length} polinizador${polinizadores.length>1?'es':''}${guardadoOffline?' · guardado localmente':''}`;
     document.getElementById('confirm-details').innerHTML=polinizadores.map(p=>`<div class="confirm-row"><span class="confirm-row-lbl">${p.nombre}${p.lote?' · '+p.lote:''}</span><span class="confirm-row-val" style="color:${p.nota>=80?'var(--accent)':p.nota>=60?'var(--amber)':'var(--red)'}">${p.nota}/100 ${p.nota>=80?'🟢':p.nota>=60?'🟡':'🔴'}</span></div>`).join('');
     window.scrollTo({top:0,behavior:'smooth'});
   }catch(e){showError('// error: '+e.message);btn.disabled=false;btn.innerHTML='Guardar en Sheets';}
