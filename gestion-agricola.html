@@ -848,7 +848,20 @@ function selANA(el,val){ document.querySelectorAll('[data-ana]').forEach(b=>b.cl
 function selApertura(el,val){ document.querySelectorAll('[data-ap]').forEach(b=>b.className='escala-btn'); el.classList.add(val==='Sí'?'sel-2':'sel-4'); document.getElementById('f-apertura').value=val; calcNotaTotal(); }
 function selRendHa(el,val){ document.querySelectorAll('[data-rha]').forEach(b=>{b.className='escala-btn';b.style.flex='1';b.style.minWidth='90px';}); el.classList.add(val.includes('Excelente')?'sel-2':val.includes('Muy bueno')?'sel-2':val.includes('Bueno')?'sel-3':'sel-4'); document.getElementById('f-rend-ha').value=val; calcNotaTotal(); }
 function selDefPct(el,val){ document.querySelectorAll('[data-defpct]').forEach(b=>b.className='escala-btn'); el.classList.add(val==='<20%'?'sel-2':val==='20-50%'?'sel-3':'sel-4'); document.getElementById('f-deficiencia-pct').value=val; }
-function selTipoMaleza(el,val){ document.querySelectorAll('[data-tipo-maleza]').forEach(b=>b.className='escala-btn'); el.classList.add('sel-2'); document.getElementById('f-maleza-tipo').value=val; }
+let malezaCorona='',malezaChapia='';
+function selMalezaPct(el,tipo,val){
+  if(tipo==='corona'){
+    document.querySelectorAll('[data-mc]').forEach(b=>b.className='escala-btn');
+    el.classList.add(val==='0'?'sel-2':val==='25'?'sel-2':val==='50'?'sel-3':'sel-4');
+    malezaCorona=val;
+  } else {
+    document.querySelectorAll('[data-mch]').forEach(b=>b.className='escala-btn');
+    el.classList.add(val==='0'?'sel-2':val==='25'?'sel-2':val==='50'?'sel-3':'sel-4');
+    malezaChapia=val;
+  }
+  document.getElementById('f-maleza').value=malezaCorona||malezaChapia;
+  document.getElementById('f-maleza-tipo').value=(malezaCorona?'Corona '+malezaCorona+'%':'')+(malezaCorona&&malezaChapia?' · ':'')+(malezaChapia?'Chapia '+malezaChapia+'%':'');
+}
 function selPlagaPct(el,val){ document.querySelectorAll('[data-plagapct]').forEach(b=>b.className='escala-btn'); el.classList.add(val==='<20%'?'sel-2':val==='20-50%'?'sel-3':'sel-4'); document.getElementById('f-plagas-pct').value=val; }
 
 function selCal(criterio,val,btn){
