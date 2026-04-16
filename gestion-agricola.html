@@ -184,7 +184,11 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5)}
       <div class="topbar-sub" id="topbar-sub">Campo 2026</div>
     </div>
   </div>
-  <div id="topbar-right">
+  <div id="topbar-right" style="display:flex;align-items:center;gap:8px">
+    <div id="offline-indicator" class="offline-badge online" onclick="sincronizarCola()" style="cursor:pointer;display:none">
+      <div class="offline-dot" id="offline-dot"></div>
+      <span id="offline-label">online</span>
+    </div>
     <div class="topbar-date" id="topbar-date"></div>
   </div>
 </div>
