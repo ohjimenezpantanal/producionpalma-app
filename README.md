@@ -46,3 +46,33 @@ CriterioPuntosInflorescencias correctas (% × 35)35 ptsCalidad de formación de 
 Umbral de alerta: puntaje < 70 pts → notificación automática
 
 Última actualización del README: abril 2026
+### Estado actual — Abril 2026
+
+**Formulario (5 pasos)**
+- Paso 1 (cosecha) opcional — permite rondas sin cosecha
+- Paso 3 (sanidad): maleza Corona y Chapia con % independientes
+- Validaciones activas en pasos 0 y 3
+
+**Dashboard**
+- KPIs: peso promedio, % polinización correcta, nota promedio
+- Sección Gestión agronómica muestra Corona/Chapia · Poda por finca
+- Tendencia semanal con sparklines (últimas 6 semanas)
+- Filtro por mes y por semana
+
+**Modo offline**
+- Cola IndexedDB — guarda registros sin señal
+- Sincronización automática al conectar WiFi
+- Indicador visual en topbar
+
+**Apps Script**
+- Fecha guardada como texto YYYY-MM-DD (sin conversión UTC)
+- Columna AJ: Tipo maleza (Corona X% · Chapia Y%)
+- Alertas por email: nota baja, plaga crítica, deficiencia, maleza urgente, poda
+- Resumen semanal automático cada lunes 7am
+- Health check diario 8am
+
+**Protocolo de deploy (CRÍTICO)**
+- Nunca eliminar ni re-subir el archivo de Google Sheets
+- Apps Script: siempre "Nueva versión" — nunca nuevo deploy
+- URL hardcodeada en HTML: `AKfycbxfQLFt4hMUlhrdFkfz-...` — no modificar
+- Backup del Apps Script en: `scripts/gestion-agricola-appsscript.gs`
