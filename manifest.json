@@ -1,0 +1,9 @@
+{
+  "name": "Pantanal · Gestión Agrícola",
+  "short_name": "Pantanal",
+  "start_url": "/produccionpalma-app/gestion-agricola.html",
+  "display": "standalone",
+  "background_color": "#0c0c0c",
+  "theme_color": "#0c0c0c",
+  "icons": []
+}
