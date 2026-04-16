@@ -675,7 +675,8 @@ function renderAll(){
   html+=`<div class="section"><div class="sec-header"><div class="sec-icon">Gestión agronómica</div><div class="sec-title">Maleza · Poda</div></div>`;
   html+=FINCAS.map(f=>{ const r=ur[f]; if(!r) return `<div class="agro-row"><div class="finca-name">${f}</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">Sin datos</div></div>`;
     const m=String(r[C.maleza]||''),p=String(r[C.poda]||''),mc=MCOL[m]||'var(--muted2)',pc=PCOL[p]||'var(--muted2)';
-    return `<div class="agro-row"><div class="finca-name">${f}</div><div class="agro-badges"><div class="badge" style="color:${mc}">Maleza ${m?m+'%':'—'}</div><div class="badge" style="color:${pc}">Poda ${p||'—'}</div></div></div>`;
+    const tm=String(r[C.tipo_maleza]||'');
+return `<div class="agro-row"><div class="finca-name">${f}</div><div class="agro-badges">${tm?`<div class="badge" style="color:var(--muted2)">${tm}</div>`:''}<div class="badge" style="color:${mc}">Maleza ${m?m+'%':'—'}</div><div class="badge" style="color:${pc}">Poda ${p||'—'}</div></div></div>`;
   }).join('');
   html+=`</div>`;
 
