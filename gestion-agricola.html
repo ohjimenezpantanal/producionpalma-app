@@ -408,7 +408,12 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5)}
       </div>
       <div class="slabel">Gestión agronómica</div>
       <div class="field"><label>% Cobertura de maleza</label>
-        <select id="f-maleza"><option value="">— seleccionar —</option><option value="10">10% — Limpio</option><option value="25">25% — Poca maleza</option><option value="50">50% — Cobertura media</option><option value="75">75% — Alta cobertura</option><option value="90">90% — Muy alta / urgente</option></select>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+  <button class="escala-btn" style="flex:1" onclick="selTipoMaleza(this,'Corona')" data-tipo-maleza="Corona">Corona</button>
+  <button class="escala-btn" style="flex:1" onclick="selTipoMaleza(this,'Chapia')" data-tipo-maleza="Chapia">Chapia</button>
+</div>
+<input type="hidden" id="f-maleza-tipo">
+<select id="f-maleza"><option value="">— seleccionar —</option><option value="10">10% — Limpio</option><option value="25">25% — Poca maleza</option><option value="50">50% — Cobertura media</option><option value="75">75% — Alta cobertura</option><option value="90">90% — Muy alta / urgente</option></select>
       </div>
       <div class="field"><label>Estado de poda — hojas por podar</label>
         <div class="escala-row">
