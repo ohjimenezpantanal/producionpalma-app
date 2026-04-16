@@ -1,3 +1,23 @@
+## [2026-04-16] — Sesión de campo con técnico
+
+### Correcciones
+- Fix fecha UTC: se eliminó conversión `new Date()` en Apps Script — fecha ya no llega como 31/12/1969
+- Fix cosecha opcional: paso 1 sin validación obligatoria — permite rondas sin cosecha
+- Fix botones paso 5: eliminado botón redundante, quedan solo "Nueva ronda de campo" y "Ver dashboard"
+- Fix flujo post-registro: "Nueva ronda de campo" arranca desde paso 0 limpio sin conflicto
+
+### Nuevas funcionalidades
+- Maleza Corona y Chapia con porcentaje independiente en el formulario
+- Dashboard muestra badge Corona/Chapia con color de alerta (verde/amber/rojo)
+- Badge maleza numérico eliminado del dashboard (evita redundancia)
+- Resumen paso 4 muestra texto descriptivo de maleza ("Corona 25% · Chapia 75%")
+- Columna "Tipo maleza" (AJ) agregada en Sheets y Apps Script
+
+### Infraestructura
+- Modo offline restaurado con cola IndexedDB
+- Sincronización automática al reconectar WiFi
+- Indicador de estado online/offline/syncing en topbar
+
 # Changelog — Scripts Hacienda Pantanal
 
 Historial de cambios de los Apps Script conectados al sistema de gestión agrícola.
