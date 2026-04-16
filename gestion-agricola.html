@@ -1018,7 +1018,7 @@ function resetForm(){
   Object.keys(counters).forEach(k=>{const el=document.getElementById('cv-'+k);if(el)el.textContent=0;});
   renderPesos();
   document.querySelectorAll('.chip').forEach(c=>c.className='chip');
-  document.querySelectorAll('.escala-btn').forEach(b=>b.className='escala-btn');
+  document.querySelectorAll('.escala-btn').forEach(b=>b.className='escala-btn');malezaCorona=''; malezaChapia='';
   document.querySelectorAll('.cal-btn').forEach(b=>b.className='cal-btn');
   ['f-finca','f-lote','f-maleza','f-maleza-tipo','f-poda','f-deficiencias','f-plagas','f-obs','f-by','p-lote','p-polinizador','f-deficiencia-pct','f-plagas-pct','f-ana','f-apertura'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const _hoy=new Date().toISOString().split('T')[0]; document.getElementById('f-fecha').value=_hoy; document.getElementById('f-fecha').max=_hoy;
