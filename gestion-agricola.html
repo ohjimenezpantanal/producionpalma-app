@@ -958,10 +958,14 @@ async function enviar(){
   try{
     for(const pol of polinizadores){
       const payload={...base,lote_polin:pol.lote,polinizador:pol.nombre,inf_base:pol.inf_base,inf_parcial:pol.inf_parcial,inf_sin:pol.inf_sin,ana:pol.ana,apertura:pol.apertura,rend_ha:pol.rendHa,cal_tecnica:pol.cal_tecnica,cal_cobertura:pol.cal_cobertura,cal_marcado:pol.cal_marcado,cal_equipos:pol.cal_equipos,nota_final:pol.nota};
-      const res=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify(payload)});
-      const json=await res.json();
-      if(!json.ok) throw new Error(json.error);
+      if(!estaOnline){
+        await guardarEnCola(payload);
+      }else{
+        try{const res=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify(payload)});const json=await res.json();if(!json.ok)throw new Error(json.error);}
+        catch(fe){await guardarEnCola(payload);}
+      }
     }
+    actualizarIndicador();
     document.getElementById('paso-4').style.display='none';
     document.getElementById('paso-5').style.display='block';
     document.getElementById('progress-label').textContent='✓ Registro completado';
