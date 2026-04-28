@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0a">
+<title>Reporte de Cosecha</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh;background:#0c0c0c;color:#f0ede8;font-family:'Syne',sans-serif;padding:20px}
+
+.header{text-align:center;padding:24px 0 28px}
+.header-icon{font-size:48px;margin-bottom:8px}
+.header-title{font-size:24px;font-weight:800;color:#b8f04a;margin-bottom:4px}
+.header-sub{font-size:14px;color:rgba(240,237,232,.5);font-weight:600}
+
+.card{background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;margin-bottom:16px}
+.card-label{font-size:12px;font-weight:700;color:rgba(240,237,232,.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-label .num{width:22px;height:22px;background:#b8f04a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#0c0c0c;flex-shrink:0}
+
+/* NOMBRE */
+.nombre-input{width:100%;padding:16px;background:#1c1c1c;border:2px solid rgba(255,255,255,.1);border-radius:12px;color:#f0ede8;font-family:'Syne',sans-serif;font-size:18px;font-weight:600;outline:none;-webkit-appearance:none}
+.nombre-input:focus{border-color:#b8f04a}
+.nombre-input::placeholder{color:rgba(240,237,232,.3)}
+
+/* FINCA BOTONES */
+.finca-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.finca-btn{padding:16px 8px;background:#1c1c1c;border:2px solid rgba(255,255,255,.1);border-radius:12px;color:rgba(240,237,232,.7);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s}
+.finca-btn.sel{background:rgba(184,240,74,.1);border-color:#b8f04a;color:#b8f04a}
+.finca-btn .finca-icon{font-size:24px;display:block;margin-bottom:6px}
+
+/* LOTE BOTONES */
+.lote-grid{display:flex;flex-wrap:wrap;gap:8px}
+.lote-btn{padding:12px 16px;background:#1c1c1c;border:2px solid rgba(255,255,255,.1);border-radius:10px;color:rgba(240,237,232,.7);font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;flex:1;min-width:70px;text-align:center}
+.lote-btn.sel{background:rgba(184,240,74,.1);border-color:#b8f04a;color:#b8f04a}
+
+/* RACIMOS */
+.racimos-wrap{display:flex;align-items:center;gap:12px;justify-content:center}
+.rac-btn{width:64px;height:64px;border-radius:50%;background:#1c1c1c;border:2px solid rgba(255,255,255,.1);color:#f0ede8;font-size:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700}
+.rac-btn.minus{font-size:28px}
+.rac-display{flex:1;text-align:center}
+.rac-num{font-size:56px;font-weight:800;color:#b8f04a;line-height:1}
+.rac-label{font-size:12px;color:rgba(240,237,232,.4);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+.rac-input{width:100%;text-align:center;background:transparent;border:none;color:#b8f04a;font-family:'Syne',sans-serif;font-size:56px;font-weight:800;outline:none;-webkit-appearance:none}
+
+/* FECHA */
+.fecha-input{width:100%;padding:16px;background:#1c1c1c;border:2px solid rgba(255,255,255,.1);border-radius:12px;color:#f0ede8;font-family:'Syne',sans-serif;font-size:18px;font-weight:600;outline:none;-webkit-appearance:none;text-align:center}
+.fecha-input:focus{border-color:#b8f04a}
+
+/* BOTON ENVIAR */
+.btn-enviar{width:100%;padding:20px;background:#b8f04a;color:#0c0c0c;font-family:'Syne',sans-serif;font-size:18px;font-weight:800;border:none;border-radius:14px;cursor:pointer;margin-top:8px;letter-spacing:.02em}
+.btn-enviar:disabled{opacity:.3}
+.spinner{display:inline-block;width:16px;height:16px;border:3px solid rgba(12,12,12,.3);border-top-color:#0c0c0c;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.msg{border-radius:12px;padding:14px 16px;font-size:14px;font-weight:700;margin-bottom:16px;display:none;text-align:center}
+.msg.error{background:rgba(240,80,80,.1);border:2px solid rgba(240,80,80,.3);color:#f05050}
+.msg.success{background:rgba(184,240,74,.1);border:2px solid rgba(184,240,74,.3);color:#b8f04a}
+
+/* CONFIRMACIÓN */
+.confirm-wrap{text-align:center;padding:20px 0}
+.confirm-icon{font-size:64px;margin-bottom:16px}
+.confirm-title{font-size:22px;font-weight:800;color:#b8f04a;margin-bottom:8px}
+.confirm-sub{font-size:14px;color:rgba(240,237,232,.6);font-weight:600;line-height:1.6}
+.confirm-detalle{background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin:20px 0;text-align:left}
+.confirm-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:15px}
+.confirm-row:last-child{border-bottom:none}
+.confirm-row-lbl{color:rgba(240,237,232,.5);font-weight:600}
+.confirm-row-val{color:#f0ede8;font-weight:700;text-align:right}
+.btn-nuevo{width:100%;padding:18px;background:#1c1c1c;border:2px solid rgba(184,240,74,.3);border-radius:14px;color:#b8f04a;font-family:'Syne',sans-serif;font-size:16px;font-weight:800;cursor:pointer;margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">🌴</div>
+  <div class="header-title">Reporte de Cosecha</div>
+  <div class="header-sub">Hacienda Pantanal</div>
+</div>
+
+<div class="msg error" id="msg-error"></div>
+<div class="msg success" id="msg-success"></div>
+
+<div id="form-wrap">
+
+  <!-- 1. NOMBRE -->
+  <div class="card">
+    <div class="card-label"><div class="num">1</div>¿Quién eres?</div>
+    <select id="f-nombre" class="nombre-input">
+      <option value="">— Selecciona tu nombre —</option>
+      <option>Cosechero 1</option>
+      <option>Cosechero 2</option>
+      <option>Cosechero 3</option>
+    </select>
+  </div>
+
+  <!-- 2. FINCA -->
+  <div class="card">
+    <div class="card-label"><div class="num">2</div>¿En qué finca trabajaste?</div>
+    <div class="finca-grid">
+      <button class="finca-btn" onclick="selFinca('Los Corrales')" data-f="Los Corrales">
+        <span class="finca-icon">🏡</span>Los Corrales
+      </button>
+      <button class="finca-btn" onclick="selFinca('Andino')" data-f="Andino">
+        <span class="finca-icon">🌿</span>Andino
+      </button>
+      <button class="finca-btn" onclick="selFinca('Chipo')" data-f="Chipo">
+        <span class="finca-icon">🌴</span>Chipo
+      </button>
+      <button class="finca-btn" onclick="selFinca('Castañeda')" data-f="Castañeda">
+        <span class="finca-icon">🌾</span>Castañeda
+      </button>
+      <button class="finca-btn" onclick="selFinca('Marujita')" data-f="Marujita" style="grid-column:span 2">
+        <span class="finca-icon">🌱</span>Marujita
+      </button>
+    </div>
+    <input type="hidden" id="f-finca">
+  </div>
+
+  <!-- 3. LOTE + RACIMOS -->
+  <div class="card" id="card-lote" style="display:none">
+    <div class="card-label"><div class="num">3</div>Lote y racimos cortados</div>
+
+    <!-- Lista de entradas -->
+    <div id="cortes-lista" style="margin-bottom:12px"></div>
+
+    <!-- Entrada nueva -->
+    <div style="background:#1c1c1c;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px">
+      <div style="font-size:12px;font-weight:700;color:rgba(240,237,232,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Agregar lote</div>
+      <div class="lote-grid" id="lote-grid" style="margin-bottom:12px"></div>
+      <input type="hidden" id="f-lote">
+      <input type="number" id="f-racimos" inputmode="numeric" min="0" placeholder="N° de racimos"
+        style="width:100%;padding:16px;background:#0c0c0c;border:2px solid rgba(255,255,255,.1);border-radius:10px;color:#b8f04a;font-family:'Syne',sans-serif;font-size:36px;font-weight:800;outline:none;-webkit-appearance:none;text-align:center;margin-bottom:10px">
+      <button onclick="agregarCorte()" style="width:100%;padding:14px;background:rgba(184,240,74,.1);border:2px solid rgba(184,240,74,.3);border-radius:10px;color:#b8f04a;font-family:'Syne',sans-serif;font-size:15px;font-weight:800;cursor:pointer">+ Agregar lote</button>
+    </div>
+
+    <!-- Total -->
+    <div id="cortes-total" style="display:none;margin-top:12px;background:rgba(184,240,74,.06);border:1px solid rgba(184,240,74,.2);border-radius:10px;padding:12px 14px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:13px;font-weight:700;color:rgba(240,237,232,.5);text-transform:uppercase;letter-spacing:.06em">Total racimos</div>
+        <div style="font-size:24px;font-weight:800;color:#b8f04a" id="cortes-total-val">0</div>
+      </div>
+      <div style="font-size:12px;color:rgba(240,237,232,.4);margin-top:3px" id="cortes-total-sub"></div>
+    </div>
+  </div>
+
+  <!-- 4. FECHA -->
+  <div class="card">
+    <div class="card-label"><div class="num">4</div>¿Qué día fue?</div>
+    <input type="date" id="f-fecha" class="fecha-input">
+  </div>
+
+  <button class="btn-enviar" id="btn-enviar" onclick="enviar()">✅ Enviar reporte</button>
+
+</div>
+
+<!-- CONFIRMACIÓN -->
+<div id="confirm-wrap" style="display:none">
+  <div class="confirm-wrap">
+    <div class="confirm-icon">✅</div>
+    <div class="confirm-title">¡Reporte enviado!</div>
+    <div class="confirm-sub">Tu reporte fue guardado correctamente</div>
+    <div class="confirm-detalle" id="confirm-detalle"></div>
+    <button class="btn-nuevo" onclick="nuevoReporte()">📝 Enviar otro reporte</button>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIUbNyVqBWES86pS-udhU3urpY3c4FrA4kH-EP4DdsKAdg29vMK4e0A-v-cDSzNsXz/exec';
+
+const LOTES = {
+  'Los Corrales': ['CO-1','CO-2','CO-3','CO-4','CO-5'],
+  'Andino':       ['AN-1','AN-2','AN-3','AN-4'],
+  'Chipo':        ['CH-1','CH-2','CH-3'],
+  'Castañeda':    ['CA-1','CA-2'],
+  'Marujita':     ['L1','L2','L3','L4']
+};
+
+var cortes = [];
+
+// Fecha de hoy
+const hoy = new Date();
+document.getElementById('f-fecha').value = hoy.toISOString().split('T')[0];
+
+function agregarCorte() {
+  var lote = document.getElementById('f-lote').value;
+  var racimos = parseInt(document.getElementById('f-racimos').value) || 0;
+  if (!cortes.length) { showError('Agrega al menos un lote con racimos'); return; }
+  var fecha = document.getElementById('f-fecha').value;
+  cortes.push({ fecha: fecha, lote: lote, racimos: racimos });
+  document.getElementById('f-racimos').value = '';
+  document.getElementById('f-lote').value = '';
+  document.querySelectorAll('.lote-btn').forEach(function(b) { b.classList.remove('sel'); });
+  renderCortes();
+  document.getElementById('msg-error').style.display = 'none';
+}
+
+function eliminarCorte(i) {
+  cortes.splice(i, 1);
+  renderCortes();
+}
+
+function renderCortes() {
+  var lista = document.getElementById('cortes-lista');
+  var totalBox = document.getElementById('cortes-total');
+  if (!cortes.length) {
+    lista.innerHTML = '';
+    totalBox.style.display = 'none';
+    return;
+  }
+  var total = cortes.reduce(function(s,c) { return s + c.racimos; }, 0);
+  lista.innerHTML = cortes.map(function(c, i) {
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#1c1c1c;border:1px solid rgba(255,255,255,.08);border-radius:10px;margin-bottom:6px">' +
+      '<div><div style="font-size:15px;font-weight:700">' + c.lote + '</div>' +
+      '<div style="font-size:13px;color:#b8f04a;font-weight:600;margin-top:2px">' + c.racimos + ' racimos</div></div>' +
+      '<button onclick="eliminarCorte(' + i + ')" style="background:none;border:none;color:rgba(240,237,232,.3);font-size:22px;cursor:pointer;padding:4px">×</button>' +
+      '</div>';
+  }).join('');
+  totalBox.style.display = 'block';
+  document.getElementById('cortes-total-val').textContent = total.toLocaleString();
+  document.getElementById('cortes-total-sub').textContent = cortes.length + ' lote' + (cortes.length > 1 ? 's' : '');
+}
+
+function selFinca(finca) {
+  document.getElementById('f-finca').value = finca;
+  document.querySelectorAll('.finca-btn').forEach(function(b) {
+    b.classList.toggle('sel', b.getAttribute('data-f') === finca);
+  });
+
+  // Reset cortes al cambiar finca
+  cortes = [];
+  renderCortes();
+
+  // Mostrar lotes
+  var lotes = LOTES[finca] || [];
+  var grid = document.getElementById('lote-grid');
+  var cardLote = document.getElementById('card-lote');
+  grid.innerHTML = '';
+  document.getElementById('f-lote').value = '';
+  document.querySelectorAll('.lote-btn').forEach(function(b) { b.classList.remove('sel'); });
+
+  lotes.forEach(function(l) {
+    var btn = document.createElement('button');
+    btn.className = 'lote-btn';
+    btn.textContent = l;
+    btn.setAttribute('data-lote', l);
+    btn.onclick = function() {
+      document.getElementById('f-lote').value = l;
+      document.querySelectorAll('.lote-btn').forEach(function(b) { b.classList.remove('sel'); });
+      btn.classList.add('sel');
+    };
+    grid.appendChild(btn);
+  });
+  cardLote.style.display = 'block';
+  cardLote.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+async function enviar() {
+  var nombre = document.getElementById('f-nombre').value;
+  var finca = document.getElementById('f-finca').value;
+  var fecha = document.getElementById('f-fecha').value;
+
+  document.getElementById('msg-error').style.display = 'none';
+
+  if (!nombre) { showError('Selecciona tu nombre'); return; }
+  if (!finca) { showError('Selecciona la finca'); return; }
+  if (!cortes.length) { showError('Agrega al menos un lote con racimos'); return; }
+  if (!fecha) { showError('Selecciona la fecha'); return; }
+
+  const btn = document.getElementById('btn-enviar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Enviando...';
+
+  // Actualizar fecha en todos los cortes
+  cortes.forEach(function(c) { c.fecha = fecha; });
+  var payload = {
+    tipo: 'Corte',
+    finca: finca,
+    by: nombre,
+    obs: 'Reporte cosechero',
+    cortes: cortes
+  };
+
+  try {
+    const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const json = await res.json();
+    if (json.ok) {
+      document.getElementById('form-wrap').style.display = 'none';
+      document.getElementById('confirm-wrap').style.display = 'block';
+      var totalRacimos = cortes.reduce(function(s,c){return s+c.racimos;},0);
+      var detalle = '<div class="confirm-row"><span class="confirm-row-lbl">Nombre</span><span class="confirm-row-val">' + nombre + '</span></div>' +
+        '<div class="confirm-row"><span class="confirm-row-lbl">Finca</span><span class="confirm-row-val">' + finca + '</span></div>' +
+        '<div class="confirm-row"><span class="confirm-row-lbl">Fecha</span><span class="confirm-row-val">' + fecha + '</span></div>';
+      cortes.forEach(function(c) {
+        detalle += '<div class="confirm-row"><span class="confirm-row-lbl">' + c.lote + '</span><span class="confirm-row-val" style="color:#b8f04a">' + c.racimos + ' racimos</span></div>';
+      });
+      detalle += '<div class="confirm-row" style="border-top:1px solid rgba(184,240,74,.2);margin-top:4px"><span class="confirm-row-lbl" style="color:#b8f04a">TOTAL</span><span class="confirm-row-val" style="color:#b8f04a;font-size:18px">' + totalRacimos + ' racimos</span></div>';
+      document.getElementById('confirm-detalle').innerHTML = detalle;
+      window.scrollTo({top:0, behavior:'smooth'});
+    } else {
+      showError('Error: ' + json.error);
+      btn.disabled = false;
+      btn.innerHTML = '✅ Enviar reporte';
+    }
+  } catch(e) {
+    showError('Sin conexión — verifica internet e intenta de nuevo');
+    btn.disabled = false;
+    btn.innerHTML = '✅ Enviar reporte';
+  }
+}
+
+function nuevoReporte() {
+  document.getElementById('form-wrap').style.display = 'block';
+  document.getElementById('confirm-wrap').style.display = 'none';
+  document.getElementById('f-nombre').value = '';
+  document.getElementById('f-finca').value = '';
+  document.getElementById('f-lote').value = '';
+  document.getElementById('f-racimos').value = '';
+  document.getElementById('f-fecha').value = new Date().toISOString().split('T')[0];
+  document.querySelectorAll('.finca-btn').forEach(function(b){b.classList.remove('sel');});
+  document.querySelectorAll('.lote-btn').forEach(function(b){b.classList.remove('sel');});
+  document.getElementById('card-lote').style.display = 'none';
+  cortes = [];
+  renderCortes();
+  document.getElementById('msg-error').style.display = 'none';
+  document.getElementById('btn-enviar').disabled = false;
+  document.getElementById('btn-enviar').innerHTML = '✅ Enviar reporte';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function showError(txt) {
+  const el = document.getElementById('msg-error');
+  el.textContent = '⚠️ ' + txt;
+  el.style.display = 'block';
+  el.scrollIntoView({behavior:'smooth', block:'center'});
+}
+</script>
+</body>
+</html>
